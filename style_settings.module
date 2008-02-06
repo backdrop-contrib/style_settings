@@ -24,7 +24,7 @@ function style_settings_rewrite($old_path) {
 	$settings = theme_get_settings($theme_key);
 	$new_path	= file_directory_path().'/style/'.md5(serialize($settings)).'.'.basename($old_path);
 	
-	if (!file_exists($new_path)) {
+	if (true){//!file_exists($new_path)) {
 		file_check_directory(dirname($new_path), FILE_CREATE_DIRECTORY);
 		$old_data = file_get_contents($old_path);
 		
@@ -33,7 +33,7 @@ function style_settings_rewrite($old_path) {
 		$new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_drupal_build_css_path', $old_data);
 		
 		// Replace all custom css
-		$new_data = preg_replace_callback('/\/\*\s*setting\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*setting\s*\*\//iU', 'style_settings_replace', $new_data);
+		$new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data);
 		
 		file_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
 	}
@@ -48,28 +48,44 @@ function style_settings_replace($matches) {
 	global $theme_key;
 	static $settings;
 	
+	$type			= $matches[1];
+	$name			= $matches[2];
+	$default	= $matches[3];
+	
 	// Cache settings for next calls
-	if (!$settings) {	
+	if ($type == 'setting' && !$settings) {	
 		$settings = theme_get_settings($theme_key);
 	}
 	
-	// Not set, so just return the default
-	if (!$settings[$matches[1]]) {
-		return $matches[2];
+	// Variable
+	if ($type == 'variable') {
+		$replacement = variable_get($name, NULL);
+		
+		if (!$replacement || !(is_string($replacement) || is_numeric($replacement))) {
+			return $default;
+		}		
+		
+	// Theme setting
+	} else {
+		$replacement = $settings[$name];
+		
+		if (!$replacement) {
+			return $default;
+		}
 	}
 	
 	// Since a comment cannot be in url(), we have to add this around the replacement (if the user doesn't).
-	if (preg_match('/url\(.*\)/i', $matches[2]) && !preg_match('/url\(.*\)/i', $settings[$matches[1]])) {
+	if (preg_match('/url\(.*\)/i', $name) && !preg_match('/url\(.*\)/i', $replacement)) {
 		
 		// Prefix path, ignoring absolute paths.
-		if (!preg_match('/^([a-z]+:|\/+)/', $settings[$matches[1]])) {
-			$settings[$matches[1]] = base_path().$settings[$matches[1]];
+		if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
+			$replacement = base_path().$replacement;
 		}
 		
-		$settings[$matches[1]] = "url('".$settings[$matches[1]]."')";
+		$replacement = "url('".$replacement."')";
 	}
 
-	return $settings[$matches[1]];
+	return $replacement;
 }
 
 ?>

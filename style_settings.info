@@ -1,3 +1,3 @@
 name = Style Settings
-description = Use any (custom) theme setting in any of your theme style sheets (CSS).
+description = Use any (custom) theme setting or Drupal variable in any of your theme style sheets (CSS).
 core = 6.x
