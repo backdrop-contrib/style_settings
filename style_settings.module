@@ -19,12 +19,13 @@ function style_settings_preprocess_page(&$variables) {
  * Rewrite a style sheet and return the path to the rewritten one.
  */
 function style_settings_rewrite($old_path) {
-	global $theme_key;
+	global $theme_key, $conf;
 	
 	$settings = theme_get_settings($theme_key);
-	$new_path	= file_directory_path().'/style/'.md5(serialize($settings)).'.'.basename($old_path);
+	$checksum	= md5(serialize($settings).serialize($conf).filectime($old_path));
+	$new_path	= file_directory_path().'/style/'.$checksum.'.'.basename($old_path);
 	
-	if (true){//!file_exists($new_path)) {
+	if (!file_exists($new_path)) {
 		file_check_directory(dirname($new_path), FILE_CREATE_DIRECTORY);
 		$old_data = file_get_contents($old_path);
 		
@@ -50,7 +51,7 @@ function style_settings_replace($matches) {
 	
 	$type			= $matches[1];
 	$name			= $matches[2];
-	$default	= $matches[3];
+	$original	= $matches[3];
 	
 	// Cache settings for next calls
 	if ($type == 'setting' && !$settings) {	
@@ -62,7 +63,7 @@ function style_settings_replace($matches) {
 		$replacement = variable_get($name, NULL);
 		
 		if (!$replacement || !(is_string($replacement) || is_numeric($replacement))) {
-			return $default;
+			return $original;
 		}		
 		
 	// Theme setting
@@ -70,12 +71,12 @@ function style_settings_replace($matches) {
 		$replacement = $settings[$name];
 		
 		if (!$replacement) {
-			return $default;
+			return $original;
 		}
 	}
-	
+
 	// Since a comment cannot be in url(), we have to add this around the replacement (if the user doesn't).
-	if (preg_match('/url\(.*\)/i', $name) && !preg_match('/url\(.*\)/i', $replacement)) {
+	if (preg_match('/url\(.*\)/i', $original) && !preg_match('/url\(.*\)/i', $replacement)) {
 		
 		// Prefix path, ignoring absolute paths.
 		if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
