@@ -1,94 +1,139 @@
 <?php
+define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
 
 /**
- * Implementation of hook_preprocess_page().
+ * @file.
+ * Use any (custom) theme setting or Drupal variable in any of your theme style
+ * sheets (CSS).
+ * 
+ * Example could be viewed here:
+ * https://drupal.org/project/style_settings
  */
-function style_settings_preprocess_page(&$variables) {
-  $css = array();
 
-  // Replace all theme stylesheets by the rewritten ones.
-  foreach ($variables['css']['all']['theme'] as $old_path => $preprocess) {
-		$css[style_settings_rewrite($old_path)] = $preprocess;
-	} 
-	  
-	$variables['css']['all']['theme'] = $css;
-	$variables['styles'] = drupal_get_css($variables['css']);
+/**
+ * Implements hook_css_alter().
+ */
+function style_settings_css_alter(&$css) {
+  if (check_plain(arg(0) != 'admin')) {
+
+    // Get path to theme, path_to_theme() only returns basethemes
+    global $theme_key;
+    $path_to_theme = drupal_get_path('theme', $theme_key);
+
+    foreach ($css as $path => $stylesheet) {
+      // Only theme CSS needs to be rewritten
+      if (file_exists($path) && strstr($path, $path_to_theme)) {
+        if ($new_path = style_settings_rewrite($path)) {
+          $relative_uri = file_create_relative_uri($new_path);
+          $css[$relative_uri] = $css[$path];
+          $css[$relative_uri]['data'] = $relative_uri;
+          unset($css[$path]);
+        }
+      }
+    }
+  }
 }
 
 /**
  * Rewrite a style sheet and return the path to the rewritten one.
  */
-function style_settings_rewrite($old_path) {
-	global $theme_key, $conf;
+function style_settings_rewrite($path) {
+  global $theme_key, $conf;
+  $settings = variable_get('theme_' . $theme_key . '_settings', array());
+  $change = (string) @filectime($path);
+  $remote = empty($change);
+  $checksum  = md5(serialize($settings) . serialize($conf) . $change);
+  $new_path  = STYLE_SETTINGS_STYLESHEET_DIR . $checksum . '.' . basename($path);
 
-	$change = (string) @filectime($old_path);
-	$remote = empty($change);	
-	$settings = theme_get_settings($theme_key);
-	$checksum	= md5(serialize($settings).serialize($conf).$change);
-	$new_path	= file_directory_path().'/style/'.$checksum.'.'.basename($old_path);
+  if ($remote || !file_exists($new_path)) {
+    $realpath = drupal_realpath($new_path);
+    $dirname = dirname($realpath);
+    file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
+    $old_data = file_get_contents(file_create_url($path));
 
-	if ($remote || !file_exists($new_path)) {
-		file_check_directory(dirname($new_path), FILE_CREATE_DIRECTORY);
-		$old_data = file_get_contents(url($old_path, array('absolute' => TRUE)));
-		
-		// Prefix all paths, ignoring absolute paths.
-		_drupal_build_css_path(NULL, base_path().dirname($old_path).'/');
-		$new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_drupal_build_css_path', $old_data);
-		
-		// Replace all custom css
-		$new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data);
-		
-		file_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
-	}
+    // Prefix all paths, ignoring absolute paths
+    _drupal_build_css_path(NULL, base_path() . dirname($path) . '/');
+    $new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_drupal_build_css_path', $old_data);
 
-	return $new_path;
+    // Replace all custom css
+    $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data);
+
+    file_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
+  }
+
+  // Cleanup leftover files
+  $generated_files = glob(drupal_realpath(STYLE_SETTINGS_STYLESHEET_DIR) . '/*');
+  $fileinfo = pathinfo($path);
+
+  foreach ($generated_files as $generated_file) {
+    if (strstr($generated_file, $fileinfo['basename']) && $generated_file != drupal_realpath($new_path)) {
+      file_unmanaged_delete($generated_file);
+    }
+  }
+
+  // Return the new path if the file exists and/or is created
+  if (file_exists($new_path)) {
+    return $new_path;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
  * Callback to replace custom css tags.
  */
 function style_settings_replace($matches) {
-	global $theme_key;
-	static $settings;
-	
-	$type			= $matches[1];
-	$name			= $matches[2];
-	$original	= $matches[3];
-	
-	// Cache settings for next calls
-	if ($type == 'setting' && !$settings) {	
-		$settings = theme_get_settings($theme_key);
-	}
-	
-	// Variable
-	if ($type == 'variable') {
-		$replacement = variable_get($name, NULL);
-		
-		if (!$replacement || !(is_string($replacement) || is_numeric($replacement))) {
-			return $original;
-		}		
-		
-	// Theme setting
-	} else {
-		$replacement = $settings[$name];
-		
-		if (!$replacement) {
-			return $original;
-		}
-	}
+  global $theme_key;
 
-	// Since a comment cannot be in url(), we have to add this around the replacement (if the user doesn't).
-	if (preg_match('/url\(.*\)/i', $original) && !preg_match('/url\(.*\)/i', $replacement)) {
-		
-		// Prefix path, ignoring absolute paths.
-		if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
-			$replacement = base_path().$replacement;
-		}
-		
-		$replacement = "url('".$replacement."')";
-	}
+  $type      = $matches[1];
+  $name      = $matches[2];
+  $original  = $matches[3];
 
-	return $replacement;
+  // Cache settings for next calls
+  if ($type == 'setting') {
+    $setting = theme_get_setting($name);
+  }
+
+  // Variable
+  if ($type == 'variable') {
+    $replacement = variable_get($name, NULL);
+
+    if (!$replacement || !(is_string($replacement) || is_numeric($replacement))) {
+      return $original;
+    }
+  }
+  // Theme setting
+  else {
+    $replacement = $setting;
+
+    if (!$replacement) {
+      return $original;
+    }
+  }
+
+  // Since a comment cannot be in url(), we have to add this around the
+  // replacement (if the user doesn't)
+  if (preg_match('/url\(.*\)/i', $original) && !preg_match('/url\(.*\)/i', $replacement)) {
+
+    // Prefix path, ignoring absolute paths
+    if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
+      $replacement = base_path() . $replacement;
+    }
+
+    $replacement = 'url(\'' . $replacement . '\')';
+  }
+
+  return $replacement;
 }
 
-?>
+/**
+ * Callback for creating a relative uri from a streamwrapper.
+ */
+function file_create_relative_uri($path) {
+  global $base_url;
+  $url = file_create_url($path);
+  $relative_uri = str_replace($base_url . '/', '', $url);
+
+  return $relative_uri;
+}
