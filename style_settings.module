@@ -42,6 +42,8 @@ function style_settings_rewrite($path) {
   $settings = variable_get('theme_' . $theme_key . '_settings', array());
   $change = (string) @filectime($path);
   $remote = empty($change);
+  unset($conf['drupal_css_cache_files']);
+  unset($conf['drupal_js_cache_files']);
   $checksum  = md5(serialize($settings) . serialize($conf) . $change);
   $new_path  = STYLE_SETTINGS_STYLESHEET_DIR . $checksum . '.' . basename($path);
 
