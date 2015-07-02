@@ -19,7 +19,6 @@ function style_settings_css_alter(&$css) {
     // Get path to theme, path_to_theme() only returns basethemes
     global $theme_key;
     $path_to_theme = drupal_get_path('theme', $theme_key);
-
     foreach ($css as $path => $stylesheet) {
       // Only theme CSS needs to be rewritten
       if (file_exists($path) && strstr($path, $path_to_theme)) {
@@ -28,6 +27,27 @@ function style_settings_css_alter(&$css) {
           $css[$relative_uri] = $css[$path];
           $css[$relative_uri]['data'] = $relative_uri;
           unset($css[$path]);
+        }
+      }
+    }
+
+    // Get path to modules that implement Style (CSS) Settings.
+    // They got 'soft_dependencies[] = style_settings' in their .info file.
+    $modules = array_keys(array_filter(system_get_info('module'), function($ar) {
+      if (isset($ar['soft_dependencies'])) {
+        return in_array('style_settings', $ar['soft_dependencies']);
+      }
+    }));
+    foreach ($modules as $module) {
+      $path_to_module = drupal_get_path('module', $module);
+      foreach ($css as $path => $stylesheet) {
+        if (file_exists($path) && strstr($path, $path_to_module)) {
+          if ($new_path = style_settings_rewrite($path)) {
+            $relative_uri = file_create_relative_uri($new_path);
+            $css[$relative_uri] = $css[$path];
+            $css[$relative_uri]['data'] = $relative_uri;
+            unset($css[$path]);
+          }
         }
       }
     }
