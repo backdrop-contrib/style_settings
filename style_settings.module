@@ -14,7 +14,7 @@ define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
  * Implements hook_css_alter().
  */
 function style_settings_css_alter(&$css) {
-  if (check_plain(arg(0) != 'admin')) {
+  if (!path_is_admin(current_path())) {
 
     // Get path to theme, path_to_theme() only returns basethemes
     global $theme_key;
