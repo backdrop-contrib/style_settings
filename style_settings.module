@@ -3,24 +3,23 @@ define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
 
 /**
  * @file.
- * Use any (custom) theme setting or Drupal variable in any of your theme style
- * sheets (CSS).
- * 
- * Example could be viewed here:
- * https://drupal.org/project/style_settings
+ * Use any (custom) theme setting or Drupal variable in any of your theme or
+ * module style sheets (see https://drupal.org/project/style_settings).
  */
 
 /**
  * Implements hook_css_alter().
  */
 function style_settings_css_alter(&$css) {
+  // Do not act on admin pages.
   if (!path_is_admin(current_path())) {
-
-    // Get path to theme, path_to_theme() only returns basethemes
+    // Get path to the current active theme, path_to_theme() only returns the
+    // base theme (see https://www.drupal.org/node/1026156).
     global $theme_key;
     $path_to_theme = drupal_get_path('theme', $theme_key);
+    // Process each style sheet of the current active theme.
     foreach ($css as $path => $stylesheet) {
-      // Only theme CSS needs to be rewritten
+      // Only theme CSS needs to be rewritten.
       if (file_exists($path) && strstr($path, $path_to_theme)) {
         if ($new_path = style_settings_rewrite($path)) {
           $relative_uri = file_create_relative_uri($new_path);
@@ -31,15 +30,17 @@ function style_settings_css_alter(&$css) {
       }
     }
 
-    // Get path to modules that implement Style (CSS) Settings.
-    // They got 'soft_dependencies[] = style_settings' in their .info file.
+    // Get all modules that use Style (CSS) Settings.
+    // They got 'soft_dependencies[] = style_settings' in their '.info' file.
     $modules = array_keys(array_filter(system_get_info('module'), function($ar) {
       if (isset($ar['soft_dependencies'])) {
         return in_array('style_settings', $ar['soft_dependencies']);
       }
     }));
+    // Process each module that has a soft-dependency.
     foreach ($modules as $module) {
       $path_to_module = drupal_get_path('module', $module);
+      // Process each style sheet of a module.
       foreach ($css as $path => $stylesheet) {
         if (file_exists($path) && strstr($path, $path_to_module)) {
           if ($new_path = style_settings_rewrite($path)) {
@@ -58,32 +59,38 @@ function style_settings_css_alter(&$css) {
  * Rewrite a style sheet and return the path to the rewritten one.
  */
 function style_settings_rewrite($path) {
+  // Get the active theme and all available persistent variables ($conf).
   global $theme_key, $conf;
+  // Get all settings of the current active theme.
   $settings = variable_get('theme_' . $theme_key . '_settings', array());
+  // We need a new unique key (and rewrite) if the original CSS file changed.
   $change = (string) @filectime($path);
   $remote = empty($change);
+  // Exclude variables that change on each page load.
   unset($conf['drupal_css_cache_files']);
   unset($conf['drupal_js_cache_files']);
+  // Generate a unique key based on theme settings, variables and file date.
   $checksum  = md5(serialize($settings) . serialize($conf) . $change);
+  // Generate the filename for the Style Settings CSS file.
   $new_path  = STYLE_SETTINGS_STYLESHEET_DIR . $checksum . '.' . basename($path);
-
+  // Generate the file itself if it doesn't exist yet.
   if ($remote || !file_exists($new_path)) {
     $realpath = drupal_realpath($new_path);
     $dirname = dirname($realpath);
     file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
     $old_data = file_get_contents(file_create_url($path));
 
-    // Prefix all paths, ignoring absolute paths
+    // Prefix all paths, ignoring absolute paths.
     _drupal_build_css_path(NULL, base_path() . dirname($path) . '/');
     $new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_drupal_build_css_path', $old_data);
 
-    // Replace all custom css
+    // Replace all custom css.
     $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data);
 
     file_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
   }
 
-  // Cleanup leftover files
+  // Cleanup leftover files.
   $generated_files = glob(drupal_realpath(STYLE_SETTINGS_STYLESHEET_DIR) . '/*');
   $fileinfo = pathinfo($path);
 
@@ -93,7 +100,7 @@ function style_settings_rewrite($path) {
     }
   }
 
-  // Return the new path if the file exists and/or is created
+  // Return the new path if the file exists.
   if (file_exists($new_path)) {
     return $new_path;
   }
@@ -112,12 +119,12 @@ function style_settings_replace($matches) {
   $name      = $matches[2];
   $original  = $matches[3];
 
-  // Cache settings for next calls
+  // Cache settings for next calls.
   if ($type == 'setting') {
     $setting = theme_get_setting($name);
   }
 
-  // Variable
+  // Variable.
   if ($type == 'variable') {
     $replacement = variable_get($name, NULL);
 
@@ -125,7 +132,7 @@ function style_settings_replace($matches) {
       return $original;
     }
   }
-  // Theme setting
+  // Theme setting.
   else {
     $replacement = $setting;
 
@@ -135,10 +142,10 @@ function style_settings_replace($matches) {
   }
 
   // Since a comment cannot be in url(), we have to add this around the
-  // replacement (if the user doesn't)
+  // replacement (if the user doesn't).
   if (preg_match('/url\(.*\)/i', $original) && !preg_match('/url\(.*\)/i', $replacement)) {
 
-    // Prefix path, ignoring absolute paths
+    // Prefix path, ignoring absolute paths.
     if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
       $replacement = base_path() . $replacement;
     }
