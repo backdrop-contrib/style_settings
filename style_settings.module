@@ -87,7 +87,7 @@ function style_settings_rewrite($path) {
     // Replace all custom css.
     $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data);
 
-    file_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
+    file_unmanaged_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
   }
 
   // Cleanup leftover files.
