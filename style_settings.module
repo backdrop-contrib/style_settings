@@ -11,6 +11,9 @@ define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
  * Implements hook_css_alter().
  */
 function style_settings_css_alter(&$css) {
+  // When _drupal_flush_css_js() changes the 'css_js_query_string', we will use
+  // this as a directive to bypass the caching of the rewritten paths.
+  $css_js_query_string_changed = variable_get('css_js_query_string', '0') != variable_get('style_settings_last_css_js_query_string', '0');
   // Get all themes that use Style (CSS) Settings.
   // They got 'soft_dependencies[] = style_settings' in their '.info' file.
   $themes = array_keys(array_filter(system_get_info('theme'), function($ar) {
@@ -25,7 +28,7 @@ function style_settings_css_alter(&$css) {
       // Process each style sheet of a theme.
       foreach ($css as $path => $stylesheet) {
         if (file_exists($path) && strstr($path, $path_to_theme)) {
-          if ($new_path = style_settings_rewrite($path)) {
+          if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed)) {
             $relative_uri = file_create_relative_uri($new_path);
             $css[$relative_uri] = $css[$path];
             $css[$relative_uri]['data'] = $relative_uri;
@@ -50,7 +53,7 @@ function style_settings_css_alter(&$css) {
       // Process each style sheet of a module.
       foreach ($css as $path => $stylesheet) {
         if (file_exists($path) && strstr($path, $path_to_module)) {
-          if ($new_path = style_settings_rewrite($path)) {
+          if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed)) {
             $relative_uri = file_create_relative_uri($new_path);
             $css[$relative_uri] = $css[$path];
             $css[$relative_uri]['data'] = $relative_uri;
@@ -60,27 +63,37 @@ function style_settings_css_alter(&$css) {
       }
     }
   }
+  if ($css_js_query_string_changed) {
+    variable_set('style_settings_last_css_js_query_string', variable_get('css_js_query_string', '0'));
+  }
 }
 
 /**
  * Rewrite a style sheet and return the path to the rewritten one.
  */
-function style_settings_rewrite($path) {
+function style_settings_rewrite($path, $reset = FALSE) {
   // Get the active theme and all available persistent variables ($conf).
   global $theme_key, $conf;
-  // Get all settings of the current active theme.
-  $settings = variable_get('theme_' . $theme_key . '_settings', array());
+  // Caching hashed 'new paths' as it is expensive to calculate these values.
+  $cid = 'style_settings_'. $path;
+  $new_path_cached = cache_get($cid);
+  $new_path = isset($new_path_cached->data) ? $new_path_cached->data : FALSE;
   // We need a new unique key (and rewrite) if the original CSS file changed.
   $change = (string) @filectime($path);
   $remote = empty($change);
   // Exclude variables that change on each page load.
   unset($conf['drupal_css_cache_files']);
   unset($conf['drupal_js_cache_files']);
-  // Generate a unique key based on theme settings, variables and file date.
-  $checksum  = md5(serialize($settings) . serialize($conf) . $change);
-  // Generate the filename for the Style Settings CSS file.
-  $new_path  = STYLE_SETTINGS_STYLESHEET_DIR . $checksum . '.' . basename($path);
-  // Generate the file itself if it doesn't exist yet.
+  if (!$new_path || $reset) {
+    // Get all settings of the current active theme.
+    $settings = variable_get('theme_' . $theme_key . '_settings', array());
+    // Generate a unique key based on theme settings, variables and file date.
+    $checksum  = md5(serialize($settings) . serialize($conf) . $change);
+    // Generate the filename for the customized CSS file.
+    $new_path  = STYLE_SETTINGS_STYLESHEET_DIR . $checksum . '.' . basename($path);
+    cache_set($cid, $new_path);
+  }
+  // Generate the customized CSS file itself if it doesn't exist yet.
   if ($remote || !file_exists($new_path)) {
     $realpath = drupal_realpath($new_path);
     $dirname = dirname($realpath);
@@ -175,7 +188,7 @@ function file_create_relative_uri($path) {
 }
 
 /**
- * Like Drupal core 'module_exists()' but for enabled themes.
+ * Like Drupal's core 'module_exists()' but for enabled themes.
  */
 function style_settings_theme_exists($theme_name) {
   $themes = list_themes();
