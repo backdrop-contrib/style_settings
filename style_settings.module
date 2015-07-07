@@ -11,34 +11,41 @@ define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
  * Implements hook_css_alter().
  */
 function style_settings_css_alter(&$css) {
-  // Do not act on admin pages.
-  if (!path_is_admin(current_path())) {
-    // Get path to the current active theme, path_to_theme() only returns the
-    // base theme (see https://www.drupal.org/node/1026156).
-    global $theme_key;
-    $path_to_theme = drupal_get_path('theme', $theme_key);
-    // Process each style sheet of the current active theme.
-    foreach ($css as $path => $stylesheet) {
-      // Only theme CSS needs to be rewritten.
-      if (file_exists($path) && strstr($path, $path_to_theme)) {
-        if ($new_path = style_settings_rewrite($path)) {
-          $relative_uri = file_create_relative_uri($new_path);
-          $css[$relative_uri] = $css[$path];
-          $css[$relative_uri]['data'] = $relative_uri;
-          unset($css[$path]);
+  // Get all themes that use Style (CSS) Settings.
+  // They got 'soft_dependencies[] = style_settings' in their '.info' file.
+  $themes = array_keys(array_filter(system_get_info('theme'), function($ar) {
+    if (isset($ar['soft_dependencies'])) {
+      return in_array('style_settings', $ar['soft_dependencies']);
+    }
+  }));
+  // Process each theme that has a soft-dependency.
+  foreach ($themes as $theme) {
+    if (style_settings_theme_exists($theme)) {
+      $path_to_theme = drupal_get_path('theme', $theme);
+      // Process each style sheet of a theme.
+      foreach ($css as $path => $stylesheet) {
+        if (file_exists($path) && strstr($path, $path_to_theme)) {
+          if ($new_path = style_settings_rewrite($path)) {
+            $relative_uri = file_create_relative_uri($new_path);
+            $css[$relative_uri] = $css[$path];
+            $css[$relative_uri]['data'] = $relative_uri;
+            unset($css[$path]);
+          }
         }
       }
     }
+  }
 
-    // Get all modules that use Style (CSS) Settings.
-    // They got 'soft_dependencies[] = style_settings' in their '.info' file.
-    $modules = array_keys(array_filter(system_get_info('module'), function($ar) {
-      if (isset($ar['soft_dependencies'])) {
-        return in_array('style_settings', $ar['soft_dependencies']);
-      }
-    }));
-    // Process each module that has a soft-dependency.
-    foreach ($modules as $module) {
+  // Get all modules that use Style (CSS) Settings.
+  // They got 'soft_dependencies[] = style_settings' in their '.info' file.
+  $modules = array_keys(array_filter(system_get_info('module'), function($ar) {
+    if (isset($ar['soft_dependencies'])) {
+      return in_array('style_settings', $ar['soft_dependencies']);
+    }
+  }));
+  // Process each module that has a soft-dependency.
+  foreach ($modules as $module) {
+    if (module_exists($module)) {
       $path_to_module = drupal_get_path('module', $module);
       // Process each style sheet of a module.
       foreach ($css as $path => $stylesheet) {
@@ -165,4 +172,12 @@ function file_create_relative_uri($path) {
   $relative_uri = str_replace($base_url . '/', '', $url);
 
   return $relative_uri;
+}
+
+/**
+ * Like Drupal core 'module_exists()' but for enabled themes.
+ */
+function style_settings_theme_exists($theme_name) {
+  $themes = list_themes();
+  return isset($themes[$theme_name]) && $themes[$theme_name]->status == 1;
 }
