@@ -2,7 +2,9 @@
 
 https://drupal.org/project/style_settings is intended for theme and module
 maintainers but can be used for customisations by anyone with basic coding
-skills (for example to provide patches for projects that could use some CSS to be configurable). It might simply be needed because a theme or module declares it as a (soft-)dependency.
+skills (for example to provide patches for projects that could use some CSS to
+be configurable). It might simply be needed because a theme or module declares
+it as a (soft-)dependency.
 
 Allows any module or theme to have their CSS attributes configurable from the UI
 just by wrapping default CSS values in a code comment. These are then
@@ -125,10 +127,10 @@ necessary to clear the cache after changing CSS variables at:
 Unnecessary rewriting of CSS files is avoided through a two step process for
 each monitored CSS file.
 
-The first step generates a unique checksum key that will be used by the second step but only
-if the css/js cache has been flushed.
+The first step generates a unique checksum key that will be used by the second
+step but only if the css/js cache has been flushed.
 
-Only after this the second step rewrites the CSS file using the checksum key if:
+The second step rewrites the CSS file using the checksum key if:
 - theme settings have changed
 OR
 - variables have changed
