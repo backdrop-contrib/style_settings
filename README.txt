@@ -125,14 +125,12 @@ necessary to clear the cache after changing CSS variables at:
 Unnecessary rewriting of CSS files is avoided through a two step process for
 each monitored CSS file.
 
-The first step generates a unique checksum key used in the second step but only
+The first step generates a unique checksum key that will be used by the second step but only
 if the css/js cache has been flushed.
 
-The second step prevents rewrite of the CSS files using the checksum if:
-- no theme settings have changed
-AND
-- no variables have changed
-AND
-- the original CSS file has not changed.
-
-
+Only after this the second step rewrites the CSS file using the checksum key if:
+- theme settings have changed
+OR
+- variables have changed
+OR
+- the original CSS file has changed.
