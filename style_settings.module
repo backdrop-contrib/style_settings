@@ -20,6 +20,9 @@ function style_settings_css_alter(&$css) {
     if (isset($ar['soft_dependencies'])) {
       return in_array('style_settings', $ar['soft_dependencies']);
     }
+    else (isset($ar['dependencies'])) {
+      return in_array('style_settings', $ar['dependencies']);
+    }
   }));
   // Process each theme that has a soft-dependency.
   foreach ($themes as $theme) {
@@ -44,6 +47,9 @@ function style_settings_css_alter(&$css) {
   $modules = array_keys(array_filter(system_get_info('module'), function($ar) {
     if (isset($ar['soft_dependencies'])) {
       return in_array('style_settings', $ar['soft_dependencies']);
+    }
+    else (isset($ar['dependencies'])) {
+      return in_array('style_settings', $ar['dependencies']);
     }
   }));
   // Process each module that has a soft-dependency.
