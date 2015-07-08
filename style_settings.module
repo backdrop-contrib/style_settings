@@ -80,6 +80,7 @@ function style_settings_rewrite($path, $reset = FALSE) {
   $new_path = isset($new_path_cached->data) ? $new_path_cached->data : FALSE;
   // We need a new unique key (and rewrite) if the original CSS file changed.
   $change = (string) @filectime($path);
+  // Detect remote files where 'filectime()' returns FALSE.
   $remote = empty($change);
   // Exclude variables that change on each page load.
   unset($conf['drupal_css_cache_files']);
@@ -193,4 +194,66 @@ function file_create_relative_uri($path) {
 function style_settings_theme_exists($theme_name) {
   $themes = list_themes();
   return isset($themes[$theme_name]) && $themes[$theme_name]->status == 1;
+}
+
+/**
+ * Implements hook_element_info().
+ */
+function style_settings_element_info() {
+  $colornames = l(t('valid color names'), 'https://en.wikipedia.org/wiki/Web_colors#X11_color_names', array(
+    'attributes' => array(
+      'title' => t('Web colors - Wikipedia, the free encyclopedia'),
+      'target' => '_blank',
+    ),
+  ));
+  $types['style_settings_colorpicker'] = array(
+    '#default_value' => '',
+    '#input' => TRUE,
+    '#theme' => array('textfield'),
+    '#theme_wrappers' => array('form_element'),
+    '#autocomplete_path' => FALSE,
+    '#element_validate' => array('style_settings_color_validate'),
+    '#type' => 'textfield',
+    '#size' => 12,
+    '#maxlength' => 20,
+    '#description' => t('Also shorthand (like #fff) and !colornames are accepted.', array('!colornames' => $colornames)),
+    '#suffix' => '<div class="style_settings-picker"></div>',
+    '#attributes' => array('class' => array('style_settings-colorpicker')),
+    '#attached' => array(
+      'library' => array(array('system', 'farbtastic')),
+      'js' => array(drupal_get_path('module', 'style_settings') . '/js/style_settings-farbtastic.js'),
+    ),
+  );
+  return $types;
+}
+
+/**
+ * Validates that the input value matches a hexadecimal color.
+ */
+function style_settings_color_validate($element, &$form_state) {
+  if (!empty($element['#value'])) {
+    // Double check that we really have an hexadecimal value.
+    if (style_settings_validate_html_color($element['#value'], 1) == FALSE) {
+      form_error($element, "<em>". check_plain($element['#value']) ."</em>". t(' is not a valid color'));
+    }
+  }
+}
+
+/* Validates hex color. Checks for a Color Name first to prevent error if a name
+ * was entered (optional).
+ * $color: the color hex value stirng to Validates $named: (optional), set to
+ * 1 or TRUE to first test if a Named color was passed instead of a Hex value.
+ */
+
+function style_settings_validate_html_color($color, $named = TRUE) {
+  if ($named) {
+    $named = array('aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue', 'darkslategray', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightsteelblue', 'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow', 'yellowgreen');
+    if (in_array(strtolower($color), $named)) {
+      return $color;
+    }
+  }
+  if (preg_match('/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i', $color)) {
+    return $color;
+  }
+  return FALSE;
 }
