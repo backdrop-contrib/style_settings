@@ -230,7 +230,8 @@ function style_settings_element_info() {
     '#size' => 12,
     '#maxlength' => 20,
     '#description' => t('Also shorthand (like #fff) and !colornames are accepted.', array('!colornames' => $colornames)),
-    '#suffix' => '<div class="style_settings-picker"></div>',
+    '#prefix' => '<div>',
+    '#suffix' => '<div class="style_settings-picker"></div></div>',
     '#attributes' => array('class' => array('style_settings-colorpicker')),
     '#attached' => array(
       'library' => array(array('system', 'farbtastic')),
