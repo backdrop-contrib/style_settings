@@ -30,7 +30,7 @@ function style_settings_css_alter(&$css) {
       $path_to_theme = drupal_get_path('theme', $theme);
       // Process each style sheet of a theme.
       foreach ($css as $path => $stylesheet) {
-        if (file_exists($path) && strstr($path, $path_to_theme)) {
+        if (file_exists($path) && strpos($path, $path_to_theme) !== FALSE) {
           if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed)) {
             $relative_uri = file_create_relative_uri($new_path);
             $css[$relative_uri] = $css[$path];
@@ -58,7 +58,7 @@ function style_settings_css_alter(&$css) {
       $path_to_module = drupal_get_path('module', $module);
       // Process each style sheet of a module.
       foreach ($css as $path => $stylesheet) {
-        if (file_exists($path) && strstr($path, $path_to_module)) {
+        if (file_exists($path) && strpos($path, $path_to_module) !== FALSE) {
           if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed)) {
             $relative_uri = file_create_relative_uri($new_path);
             $css[$relative_uri] = $css[$path];
@@ -129,7 +129,7 @@ function style_settings_rewrite($path, $reset = FALSE) {
   $fileinfo = pathinfo($path);
 
   foreach ($generated_files as $generated_file) {
-    if (strstr($generated_file, $fileinfo['basename']) && $generated_file != drupal_realpath($new_path)) {
+    if (strpos($generated_file, $fileinfo['basename']) !== FALSE && $generated_file != drupal_realpath($new_path)) {
       file_unmanaged_delete($generated_file);
     }
   }
