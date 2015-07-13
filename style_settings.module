@@ -20,7 +20,7 @@ function style_settings_css_alter(&$css) {
     if (isset($ar['soft_dependencies'])) {
       return in_array('style_settings', $ar['soft_dependencies']);
     }
-    else (isset($ar['dependencies'])) {
+    elseif (isset($ar['dependencies'])) {
       return in_array('style_settings', $ar['dependencies']);
     }
   }));
@@ -48,7 +48,7 @@ function style_settings_css_alter(&$css) {
     if (isset($ar['soft_dependencies'])) {
       return in_array('style_settings', $ar['soft_dependencies']);
     }
-    else (isset($ar['dependencies'])) {
+    elseif (isset($ar['dependencies'])) {
       return in_array('style_settings', $ar['dependencies']);
     }
   }));
