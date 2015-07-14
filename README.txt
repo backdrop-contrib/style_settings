@@ -2,15 +2,17 @@
 
 https://drupal.org/project/style_settings is intended for theme and module
 maintainers but can be used for customisations by anyone with basic coding
-skills (for example to provide patches for projects that could use some CSS to
+skills (for example to provide a patch for projects that could use some CSS to
 be configurable). It might simply be needed because a theme or module declares
 it as a (soft-)dependency.
 
 Allows any module or theme to have their CSS attributes configurable from the UI
 just by wrapping default CSS values in a code comment. These are then
 substituted in a separate rewritten CSS file by Drupal variables or theme
-settings. The CSS is functional even if this module is not installed. All is
-cached so the performance impact is neglectable.
+settings. The CSS is functional even if this module is not installed.
+
+All is cached so the performance impact is neglectable. The rewritten CSS files
+are included in the CSS aggregation mechanism.
 
 
 ### How to add configurable CSS to your module or theme? ###
@@ -62,8 +64,24 @@ The Style (CSS) Settings module provides a new form API element
 - stores the variable value as a hex or color name that is valid in CSS files.
 
 For project maintainers adding a color setting to their configuration is as easy
-adding a few lines of code. An example how to provide form elements on your
-settings page can be found in the 'code snippets' section below.
+adding a few lines of code. An example can be found in the 'code snippets'
+section below.
+
+#### Add slider fields (HTML5 range input) ####
+
+The Style (CSS) Settings module provides a new form API element
+'style_settings_slider' that:
+- exposer a slider widget (a range) in HTML5 capable browsers
+- shows the numeric value that corresponds with the handle position even while
+  sliding it
+- takes care of the right range and validation just by providing a min/max and
+  step value
+- is preset to be used for opacity (min:0, max:1, step:0.01) but this can be
+  overriden.
+
+For project maintainers adding a slider to their configuration is as easy adding
+a few lines of code. An example how to provide a slider can be found in the
+'code snippets' section below.
 
 For more information on custom theme settings, read:
   https://www.drupal.org/node/177868
@@ -95,10 +113,21 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       ),
   ));
   if (module_exists('style_settings')) {
+    // Color picker example.
     $form['YOURMODULE_bgcolor'] = array(
       '#type' => 'style_settings_colorpicker',
       '#title' => t('Background color'),
       '#default_value' => variable_get('YOURMODULE_bgcolor', 'IndianRed'),
+    );
+    // Slider widget example.
+    $form['YOURMODULE_radius'] = array(
+      '#type' => 'style_settings_slider',
+      '#title' => t('Rounded corner radius'),
+      '#default_value' => variable_get('YOURMODULE_radius', 10),
+      '#step' => 1, // Default is 0.01.
+      '#min' => 0, // Could be omitted as the default is 0.
+      '#max' => 30, // Default is 1.
+      '#suffix' => 'px',
     );
   }
   else {
@@ -130,7 +159,8 @@ each monitored CSS file.
 The first step generates a unique checksum key that will be used by the second
 step but only if the css/js cache has been flushed.
 
-The second step rewrites the CSS file using the checksum key if:
+The second step rewrites the CSS file using the checksum key if it contains a
+setting or variable code comment AND:
 - theme settings have changed
 OR
 - variables have changed
