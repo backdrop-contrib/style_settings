@@ -122,16 +122,19 @@ function style_settings_rewrite($path, $reset = FALSE) {
     $new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_drupal_build_css_path', $old_data);
 
     // Replace all custom css.
-    $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data);
+    $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data, $limit = -1, $count);
 
-    file_unmanaged_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
-    $watchdog = l(t('Recent log messages'), 'admin/reports/dblog', array(
-      'attributes' => array(
-      'title' => t('Home » Administration » Reports'),
-      ),
-    ));
-    drupal_set_message(t('Style Settings CSS files have been rewritten successfully. Check !watchdog for details.', array('!watchdog' => $watchdog)), 'status', FALSE);
-    watchdog('style_settings', 'Rewritten successfully %path to %new_path' , array('%path' => $path, '%new_path' => $new_path));
+    // Only rewrite a CSS file if any replacements were made.
+    if ($count > 0) {
+      file_unmanaged_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
+      $watchdog = l(t('Recent log messages'), 'admin/reports/dblog', array(
+        'attributes' => array(
+        'title' => t('Home » Administration » Reports'),
+        ),
+      ));
+      drupal_set_message(t('Style Settings CSS files have been rewritten successfully. Check !watchdog for details.', array('!watchdog' => $watchdog)), 'status', FALSE);
+      watchdog('style_settings', 'Rewritten successfully %path to %new_path' , array('%path' => $path, '%new_path' => $new_path));
+    }
   }
 
   // Cleanup leftover files.
