@@ -1,0 +1,4 @@
+/* A suffix must appear right after a slider field. Not under it.*/
+.form-item.form-type-style-settings-slider {
+  display: inline;
+}
