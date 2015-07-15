@@ -7,8 +7,8 @@ be configurable). It might simply be needed because a theme or module declares
 it as a (soft-)dependency.
 
 Allows any module or theme to have their CSS attributes configurable from the UI
-just by wrapping default CSS values in a code comment. These are then
-substituted in a separate rewritten CSS file by Drupal variables or theme
+just by wrapping default CSS values (plus unit) in a code comment. These are
+then substituted in a separate rewritten CSS file by Drupal variables or theme
 settings. The CSS is functional even if this module is not installed.
 
 All is cached so the performance impact is neglectable. The rewritten CSS files
@@ -21,19 +21,39 @@ are included in the CSS aggregation mechanism.
     soft_dependencies[] = style_settings
   OR if you want to make the Style (CSS) Settings module required:
     dependencies[] = style_settings
-- Wrap CSS values you want to be configurable in comments.
+- Wrap CSS values you want to be configurable in comments, including its unit
+  (px, em, %) if present.
   An example for a module:
     font-size: 80%;
   becomes:
-    font-size: /*variable:YOURMODULE_caption_fontsize*/80/*variable*/%;
+    font-size: /*variable:YOURMODULE_caption_fontsize*/80%/*variable*/;
   An example for a theme:
     font-size: 16px;
   becomes:
-    font-size: /*setting:YOURTHEME_base_fontsize*/16/*setting*/px;
+    font-size: /*setting:YOURTHEME_base_fontsize*/16px/*setting*/;
   The wrapped values are used as the default. Because comments cannot reside
   within url(...), you need to add the comments around it.
 - Provide form elements on your settings page to configure module variables or
   theme settings (see below).
+
+#### Note ####
+No code comment are allowed between a CSS value and its unit.
+Something like:
+  border-width: /*variable:YOURMODULE_thickness*/2/*variable*/px;
+results in invalid CSS and is therefore ignored by browsers. Use instead:
+  border-width: /*variable:YOURMODULE_thickness*/2px/*variable*/;
+
+You can set the variable as a 'textfield' in your settings form code. An example
+can be found in the 'code snippets' section below.
+
+For readability it is furthermore recommended not to set the values of several
+CSS properties simultaneously if it contains inline code comments.
+Instead of:
+  border: solid /*variable:YOURMODULE_thickness*/2px/*variable*/ /*variable:YOURMODULE_color*/Red/*variable*/;
+use:
+  border-style: solid;
+  border-width: /*variable:YOURMODULE_thickness*/2px/*variable*/;
+  border-color: /*variable:YOURMODULE_color*/Red/*variable*/;
 
 
 ### How to provide form elements on your settings page? ###
@@ -113,20 +133,28 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       ),
   ));
   if (module_exists('style_settings')) {
+    // A normal textfield. It does not offer any validation by itself.
+    $form['YOURMODULE_borderwidth'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Border width'),
+      '#default_value' => variable_get('YOURMODULE_borderwidth', '2px'),
+      '#size' => 3,
+      '#maxlength' => 3,
+    );
     // Color picker example.
-    $form['YOURMODULE_bgcolor'] = array(
+    $form['YOURMODULE_bordercolor'] = array(
       '#type' => 'style_settings_colorpicker',
-      '#title' => t('Background color'),
-      '#default_value' => variable_get('YOURMODULE_bgcolor', 'IndianRed'),
+      '#title' => t('Border color'),
+      '#default_value' => variable_get('YOURMODULE_bordercolor', 'IndianRed'),
     );
     // Slider widget example.
-    $form['YOURMODULE_radius'] = array(
+    $form['YOURMODULE_borderradius'] = array(
       '#type' => 'style_settings_slider',
-      '#title' => t('Rounded corner radius'),
-      '#default_value' => variable_get('YOURMODULE_radius', 10),
-      '#step' => 1, // Default is 0.01.
-      '#min' => 0, // Could be omitted as the default is 0.
-      '#max' => 30, // Default is 1.
+      '#title' => t('Border rounded corner radius'),
+      '#default_value' => variable_get('YOURMODULE_borderradius', 10),
+      '#step' => 1, // Defaults to 0.01 if omitted.
+      '#min' => 0, // Could be omitted as it defaults to 0 already.
+      '#max' => 30, // Defaults to 1 if omitted.
       '#suffix' => 'px',
     );
   }
