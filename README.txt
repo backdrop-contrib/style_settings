@@ -49,11 +49,11 @@ can be found in the 'code snippets' section below.
 For readability it is furthermore recommended not to set the values of several
 CSS properties simultaneously if it contains inline code comments.
 Instead of:
-  border: solid /*variable:YOURMODULE_thickness*/2px/*variable*/ /*variable:YOURMODULE_color*/Red/*variable*/;
+  border: solid /*variable:YOURMODULE_borderwidth*/2px/*variable*/ /*variable:YOURMODULE_bordercolor*/Red/*variable*/;
 use:
   border-style: solid;
-  border-width: /*variable:YOURMODULE_thickness*/2px/*variable*/;
-  border-color: /*variable:YOURMODULE_color*/Red/*variable*/;
+  border-width: /*variable:YOURMODULE_borderwidth*/2px/*variable*/;
+  border-color: /*variable:YOURMODULE_bordercolor*/Red/*variable*/;
 
 
 ### How to provide form elements on your settings page? ###
@@ -88,6 +88,8 @@ adding a few lines of code. An example can be found in the 'code snippets'
 section below.
 
 #### Add slider fields (HTML5 range input) ####
+
+Note: Does not work on <= IE9.
 
 The Style (CSS) Settings module provides a new form API element
 'style_settings_slider' that:
