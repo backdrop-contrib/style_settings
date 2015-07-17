@@ -1,6 +1,28 @@
 <?php
 
 /**
+ * Returns HTML for a number form element.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #title, #value, #description, #min, #max, #placeholder,
+ *     #required, #attributes, #step, 'size', 'maxlength'.
+ *
+ * @ingroup themeable
+ */
+function theme_style_settings_number($variables) {
+  $element = $variables['element'];
+  $element['#attributes']['type'] = 'text';
+  element_set_attributes($element, array('id', 'name', 'value', 'step', 'min', 'max', 'size', 'maxlength', 'placeholder'));
+  _form_set_class($element, array('form-text'));
+
+  $output = '<input' . drupal_attributes($element['#attributes']) . ' />';
+
+  return $output;
+}
+
+/**
  * Returns HTML for a slider form element.
  *
  * @param $variables

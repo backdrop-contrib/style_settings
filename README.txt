@@ -36,18 +36,20 @@ are included in the CSS aggregation mechanism.
 - Provide form elements on your settings page to configure module variables or
   theme settings (see below).
 
-#### Note ####
+#### Note 1 ####
 No code comment are allowed between a CSS value and its unit.
+
 Something like:
   border-width: /*variable:YOURMODULE_thickness*/2/*variable*/px;
 results in invalid CSS and is therefore ignored by browsers. Use instead:
   border-width: /*variable:YOURMODULE_thickness*/2px/*variable*/;
 
-You can set the variable as a 'textfield' in your settings form code. An example
-can be found in the 'code snippets' section below.
+The Style Settings form element 'Number' (see below) takes care of putting a
+measurement unit behind the value when storing it in a variable.
 
-For readability it is furthermore recommended not to set the values of several
-CSS properties simultaneously if it contains inline code comments.
+#### Note 2 ####
+For readability it is recommended not to set the values of several CSS
+properties simultaneously if it contains inline code comments.
 Instead of:
   border: solid /*variable:YOURMODULE_borderwidth*/2px/*variable*/ /*variable:YOURMODULE_bordercolor*/Red/*variable*/;
 use:
@@ -67,43 +69,46 @@ wrapping all Style Settings specific form elements inside a conditional:
 
   if (module_exists('style_settings')) { ... }
 
-#### Add ColorPicker fields ####
+#### Add a form fields ####
+
+Developers can use any form API element on their settings page to capture a
+theme setting or variable. The Style Settings module offers also a few custom
+form API element to make building CSS settings easier. Cool UI widgets and
+built-in validation of user input. For example a color picker or a slider.
+
+For project maintainers adding a Style Setting field to their configuration is
+as easy adding a few lines of code. Examples how to provide different types of
+Style Settings can be found in the 'code snippets' section below.
+
+##### Number #####
+
+'#type' => 'style_settings_number',
+- Takes care of the validation just by providing a min/max and step value.
+- Adds a unit if valid. Input: '2', field_suffix: 'px' => stored variable: '2px'
+- Aligns field input to the right to stay close to the unit (field_suffix).
+
+##### ColorPicker #####
 
 A lot of CSS attributes contain a color value. Although a simple text field
-could hold a color hex value, having also a colorpicker is more convenient and
-the choosen color would be visible. However the Drupal form API does currently
-not offer a 'colorpicker' form element type.
+could hold a color hex value, having a colorpicker is more convenient.
 
-The Style (CSS) Settings module provides a new form API element
-'style_settings_colorpicker' that:
-- uses Drupal core's Farbtastic ColorPicker plugin
-- makes the current choosen color visible in the settings field itself
-- takes care of the validation as being a valid color
-- does not depend on any contrib or the Color module
-- does not need an additional jQuery library
-- stores the variable value as a hex or color name that is valid in CSS files.
+'#type' =>  'style_settings_colorpicker',
+- Uses Drupal core's Farbtastic ColorPicker plugin.
+- Makes the current choosen color visible in the settings field itself.
+- Only accepts a valid color, a hex value but also a color name.
+- Does not depend on any contrib or the Color module.
+- Does not need an additional jQuery library.
+- Stores the variable as a hex value or color name that is valid in CSS files.
 
-For project maintainers adding a color setting to their configuration is as easy
-adding a few lines of code. An example can be found in the 'code snippets'
-section below.
+##### Slider (HTML5 range input) #####
 
-#### Add slider fields (HTML5 range input) ####
+'#type' => 'style_settings_slider',
+- Exposes a slider widget (a range) in HTML5 capable browsers (all but <= IE9).
+- Shows the numeric value that corresponds with the handle position.
+- Validation just by providing a min/max and step value.
+- Preset to be used for opacity (min:0, max:1, step:0.01) but can be overriden.
 
-Note: Does not work on <= IE9.
-
-The Style (CSS) Settings module provides a new form API element
-'style_settings_slider' that:
-- exposer a slider widget (a range) in HTML5 capable browsers
-- shows the numeric value that corresponds with the handle position even while
-  sliding it
-- takes care of the right range and validation just by providing a min/max and
-  step value
-- is preset to be used for opacity (min:0, max:1, step:0.01) but this can be
-  overriden.
-
-For project maintainers adding a slider to their configuration is as easy adding
-a few lines of code. An example how to provide a slider can be found in the
-'code snippets' section below.
+#### More info ####
 
 For more information on custom theme settings, read:
   https://www.drupal.org/node/177868
@@ -116,9 +121,9 @@ A simple but complete example of module settings is Drupal core's
 '/modules/update/update.settings.inc'.
 
 
-### Code snippets ###
+### Code snippet examples ###
 
-Put the following comment at the top of your CSS files that contains variables:
+Put the following comment at the top of CSS files that contain style variables:
 
 /**
  * The CSS values that are wrapped in '/*variable' comments are intended for use
@@ -135,13 +140,34 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       ),
   ));
   if (module_exists('style_settings')) {
+
+    // Any form API element can be used 
     // A normal textfield. It does not offer any validation by itself.
-    $form['YOURMODULE_borderwidth'] = array(
+    $form['YOURMODULE_caption_align'] = array(
       '#type' => 'textfield',
+      '#title' => t('Caption text align'),
+      '#default_value' => variable_get('YOURMODULE_caption_align', 'center'),
+      '#size' => 12,
+    );
+
+    // Style Settings offers several form API elements to help developers build
+    // the settings page. Cool UI widgets and built-in validation of user input.
+
+    // Number example in this case with an appended measurement unit (optional).
+    // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
+    $form['YOURMODULE_borderwidth'] = array(
+      '#type' => 'style_settings_number',
       '#title' => t('Border width'),
-      '#default_value' => variable_get('YOURMODULE_borderwidth', '2px'),
-      '#size' => 3,
-      '#maxlength' => 3,
+      '#step' => 1, // In this case if forces an integer as input.
+      '#min' => 0, // Could be omitted. Defaults to 0. Set to NULL to ignore.
+      '#max' => 10, // Defaults to 1 if omitted.
+      // The variable default should include a measurement unit if applicable.
+      // Wrapped in floatval() to turn it into a number. E.g. '2px' => '2'.
+      '#default_value' => floatval(variable_get('YOURMODULE_borderwidth', '2px')),
+      // The suffix gets added to the input on submit if valid measurement unit.
+      '#field_suffix' => 'px',
+      // Uncomment the line below to NOT align the field input on the right.
+//      '#attributes' => NULL,
     );
     // Color picker example.
     $form['YOURMODULE_bordercolor'] = array(
@@ -150,14 +176,17 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       '#default_value' => variable_get('YOURMODULE_bordercolor', 'IndianRed'),
     );
     // Slider widget example.
-    $form['YOURMODULE_borderradius'] = array(
+    $form['YOURMODULE_magnifier_icon_opacity'] = array(
       '#type' => 'style_settings_slider',
-      '#title' => t('Border rounded corner radius'),
-      '#default_value' => variable_get('YOURMODULE_borderradius', 10),
-      '#step' => 1, // Defaults to 0.01 if omitted.
-      '#min' => 0, // Could be omitted as it defaults to 0 already.
-      '#max' => 30, // Defaults to 1 if omitted.
-      '#suffix' => 'px',
+      '#title' => t('Magnifier icon opacity'),
+      '#description' => t('0 = transparent. 1 = opaque.'),
+      '#default_value' => variable_get('YOURMODULE_magnifier_icon_opacity', 0.85),
+      // Parameters below could be omitted. It is already preset for opacity.
+      '#step' => 0.01,
+      '#min' => 0,
+      '#max' => 1,
+      // Added for demonstration purpose.
+      'field_suffix' => NULL,
     );
   }
   else {
@@ -170,7 +199,7 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
     );
   }
 
-Recommended is to add to your form submit handler:
+Recommended is to add to the form submit handler:
 
   if (module_exists('style_settings')) {
     _drupal_flush_css_js();
@@ -189,8 +218,8 @@ each monitored CSS file.
 The first step generates a unique checksum key that will be used by the second
 step but only if the css/js cache has been flushed.
 
-The second step rewrites the CSS file using the checksum key if it contains a
-setting or variable code comment AND:
+The second step rewrites the CSS file using the checksum key if it contains
+inline setting or variable code comments AND:
 - theme settings have changed
 OR
 - variables have changed

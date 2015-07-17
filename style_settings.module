@@ -251,6 +251,17 @@ function style_settings_element_info() {
       'js' => array(drupal_get_path('module', 'style_settings') . '/js/style_settings-farbtastic.js'),
     ),
   );
+  $types['style_settings_number'] = array(
+    '#input' => TRUE,
+    '#min' => 0,
+    '#size' => 4,
+    '#process' => array('ajax_process_form'),
+    '#element_validate' => array('style_settings_validate_number'),
+    '#value_callback' => '_style_settings_number_value_callback',
+    '#theme' => 'style_settings_number',
+    '#theme_wrappers' => array('form_element'),
+    '#attributes' => array('class' => array('style_settings-form-align')),
+  );
   $types['style_settings_slider'] = array(
     '#input' => TRUE,
     '#step' => 0.01,
@@ -296,11 +307,12 @@ function style_settings_validate_html_color($color, $named = TRUE) {
 }
 
 /**
- * Form element validation handler for #type 'number'.
+ * Form element validation handler for #type 'style_settings_number'.
  *
  * Note that #required is validated by _form_validate() already.
  */
 function style_settings_validate_number(&$element, &$form_state) {
+  $element['#value'] = floatval($element['#value']);
   $value = $element['#value'];
   if ($value === '') {
     return;
@@ -330,7 +342,7 @@ function style_settings_validate_number(&$element, &$form_state) {
     $offset = isset($element['#min']) ? $element['#min'] : 0.0;
 
     if (!style_settings_valid_number_step($value, $element['#step'], $offset)) {
-      form_error($element, t('%name is not a valid number.', array('%name' => $name)));
+      form_error($element, t('%name is not a multiple of %step.', array('%name' => $name, '%step' => $element['#step'])));
     }
   }
 }
@@ -382,10 +394,39 @@ function style_settings_valid_number_step($value, $step, $offset = 0.0) {
 }
 
 /**
+ * Form element input handler for #type 'style_settings_number'.
+ */
+function _style_settings_number_value_callback($element, $input = FALSE, &$form_state) {
+  if ($input !== FALSE) {
+    if (isset($element['#field_suffix'])) {
+    // If the field suffix is a valid unit, use it.
+      if (in_array(strtolower($element['#field_suffix']), array('px', 'em', '%', 'rem', 'cm', 'ex', 'in', 'mm', 'pc', 'pt', 'vh', 'vw', 'vmin'))) {
+        return $form_state['input'][$element['#name']] . $element['#field_suffix'];
+      }
+      else {
+        return $form_state['input'][$element['#name']];
+      }
+    }
+    else {
+      return $form_state['input'][$element['#name']];
+    }
+  }
+  elseif (!empty($element['#default_value'])) {
+    return $element['#default_value'];
+  } 
+  return;
+}
+
+/**
  * Implements hook_theme().
  */
 function style_settings_theme() {
   return array(
+    'style_settings_number' => array(
+      'arguments' => array('element' => NULL),
+      'render element' => 'element',
+      'file' => 'style_settings.theme.inc',
+    ),
     'style_settings_slider' => array(
       'arguments' => array('element' => NULL),
       'render element' => 'element',
