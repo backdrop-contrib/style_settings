@@ -106,6 +106,7 @@ could hold a color hex value, having a colorpicker is more convenient.
 - Exposes a slider widget (a range) in HTML5 capable browsers (all but <= IE9).
 - Shows the numeric value that corresponds with the handle position.
 - Validation just by providing a min/max and step value.
+- Adds a unit if valid. Input: '1', field_suffix: 'em' => stored variable: '1em'
 - Preset to be used for opacity (min:0, max:1, step:0.01) but can be overriden.
 
 #### More info ####
@@ -180,12 +181,15 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       '#type' => 'style_settings_slider',
       '#title' => t('Magnifier icon opacity'),
       '#description' => t('0 = transparent. 1 = opaque.'),
-      '#default_value' => variable_get('YOURMODULE_magnifier_icon_opacity', 0.85),
+      // The variable default should include a measurement unit if applicable.
+      // Wrapped in floatval() to turn it into a number. E.g. '2px' => '2'.
+      '#default_value' => floatval(variable_get('YOURMODULE_magnifier_icon_opacity', 0.85)),
       // Parameters below could be omitted. It is already preset for opacity.
       '#step' => 0.01,
       '#min' => 0,
       '#max' => 1,
       // Added for demonstration purpose.
+      // The suffix gets added to the input on submit if valid measurement unit.
       'field_suffix' => NULL,
     );
   }

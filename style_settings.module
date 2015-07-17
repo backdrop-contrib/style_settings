@@ -269,6 +269,7 @@ function style_settings_element_info() {
     '#max' => 1,
     '#process' => array('ajax_process_form'),
     '#element_validate' => array('style_settings_validate_number'),
+    '#value_callback' => '_style_settings_number_value_callback',
     '#theme' => 'style_settings_slider',
     '#theme_wrappers' => array('form_element'),
   );
