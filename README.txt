@@ -86,6 +86,12 @@ Style Settings can be found in the 'code snippets' section below.
 - Adds a unit if valid. Input: '2', field_suffix: 'px' => stored variable: '2px'
 - Aligns field input to the right to stay close to the unit (field_suffix).
 
+Accepted attributes, the same as a 'textfield' plus:
+'#min' => [minimum, defaults to 0],
+'#max' => [maximum, optional],
+'#step' => [multiple of, optional, if set to 1 accept only integers],
+'#input_help' => [show above values as field help text, defaults to TRUE],
+
 ##### ColorPicker #####
 A lot of CSS attributes contain a color value. Although a simple text field
 could hold a color hex value, having a colorpicker is more convenient.
@@ -104,7 +110,12 @@ could hold a color hex value, having a colorpicker is more convenient.
 - Shows the numeric value that corresponds with the handle position.
 - Validation just by providing a min/max and step value.
 - Adds a unit if valid. Input: '1', field_suffix: 'em' => stored variable: '1em'
-- Preset to be used for opacity (min:0, max:1, step:0.01) but can be overriden.
+
+Accepted attributes, the same as a 'textfield' plus:
+'#min' => [minimum, defaults to 0],
+'#max' => [maximum, defaults to 1],
+'#step' => [multiple of, defaults to 0.01],
+The defaults are preset for the CSS attribute 'opacity' but can be overriden.
 
 ##### A selectable measurement unit (e.g. px, em, %) #####
 To have a select widget after a number field :

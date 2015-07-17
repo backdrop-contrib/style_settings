@@ -253,6 +253,7 @@ function style_settings_element_info() {
   );
   $types['style_settings_number'] = array(
     '#input' => TRUE,
+    '#type' => 'textfield',
     '#min' => 0,
     '#size' => 4,
     '#process' => array('ajax_process_form'),
@@ -260,6 +261,7 @@ function style_settings_element_info() {
     '#value_callback' => '_style_settings_number_value_callback',
     '#theme' => 'style_settings_number',
     '#theme_wrappers' => array('form_element'),
+    '#input_help' => TRUE,
     '#attributes' => array('class' => array('style_settings-form-align')),
   );
   $types['style_settings_slider'] = array(

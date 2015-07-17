@@ -7,17 +7,20 @@
  *   An associative array containing:
  *   - element: An associative array containing the properties of the element.
  *     Properties used: #title, #value, #description, #min, #max, #placeholder,
- *     #required, #attributes, #step, 'size', 'maxlength'.
+ *     #required, #attributes, #step, #size, #maxlength, #input_help.
  *
  * @ingroup themeable
  */
 function theme_style_settings_number($variables) {
   $element = $variables['element'];
   $element['#attributes']['type'] = 'text';
-  element_set_attributes($element, array('id', 'name', 'value', 'step', 'min', 'max', 'size', 'maxlength', 'placeholder'));
+  element_set_attributes($element, array('id', 'name', 'value', 'step', 'min', 'max', 'size', 'maxlength', 'placeholder', 'input_help'));
   _form_set_class($element, array('form-text'));
-
-  $output = '<input' . drupal_attributes($element['#attributes']) . ' />';
+  $min = isset($element['#min']) ? t('Min') . '=' . $element['#min'] : '';
+  $max = isset($element['#max']) ? '&nbsp;&nbsp;' . t('Max') . '=' . $element['#max'] : '';
+  $step = isset($element['#step']) ? '&nbsp;&nbsp;' . t('Step') . '=' . $element['#step'] : '';
+  $input_help = $element['#input_help'] ? '<div class="description clearfix">' . $min . $max . $step . '</div>' : '';
+  $output = $input_help . '<input' . drupal_attributes($element['#attributes']) . ' />';
 
   return $output;
 }
