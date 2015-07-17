@@ -26,7 +26,7 @@ are included in the CSS aggregation mechanism.
   An example for a module:
     font-size: 80%;
   becomes:
-    font-size: /*variable:YOURMODULE_caption_fontsize*/80%/*variable*/;
+    font-size: /*variable:FOO_fontsize*/80%/*variable*/;
   An example for a theme:
     font-size: 16px;
   becomes:
@@ -37,12 +37,12 @@ are included in the CSS aggregation mechanism.
   theme settings (see below).
 
 #### Note 1 ####
-No code comment are allowed between a CSS value and its unit.
+No code comments are allowed between a CSS value and its unit.
 
 Something like:
-  border-width: /*variable:YOURMODULE_thickness*/2/*variable*/px;
+  border-width: /*variable:FOO_thickness*/2/*variable*/px;
 results in invalid CSS and is therefore ignored by browsers. Use instead:
-  border-width: /*variable:YOURMODULE_thickness*/2px/*variable*/;
+  border-width: /*variable:FOO_thickness*/2px/*variable*/;
 
 The Style Settings form element 'Number' (see below) takes care of putting a
 measurement unit behind the value when storing it in a variable.
@@ -51,11 +51,11 @@ measurement unit behind the value when storing it in a variable.
 For readability it is recommended not to set the values of several CSS
 properties simultaneously if it contains inline code comments.
 Instead of:
-  border: solid /*variable:YOURMODULE_borderwidth*/2px/*variable*/ /*variable:YOURMODULE_bordercolor*/Red/*variable*/;
+  border: solid /*variable:FOO_borderwidth*/2px/*variable*/ /*variable:FOO_bordercolor*/Red/*variable*/;
 use:
   border-style: solid;
-  border-width: /*variable:YOURMODULE_borderwidth*/2px/*variable*/;
-  border-color: /*variable:YOURMODULE_bordercolor*/Red/*variable*/;
+  border-width: /*variable:FOO_borderwidth*/2px/*variable*/;
+  border-color: /*variable:FOO_bordercolor*/Red/*variable*/;
 
 
 ### How to provide form elements on your settings page? ###
@@ -81,14 +81,12 @@ as easy adding a few lines of code. Examples how to provide different types of
 Style Settings can be found in the 'code snippets' section below.
 
 ##### Number #####
-
 '#type' => 'style_settings_number',
 - Takes care of the validation just by providing a min/max and step value.
 - Adds a unit if valid. Input: '2', field_suffix: 'px' => stored variable: '2px'
 - Aligns field input to the right to stay close to the unit (field_suffix).
 
 ##### ColorPicker #####
-
 A lot of CSS attributes contain a color value. Although a simple text field
 could hold a color hex value, having a colorpicker is more convenient.
 
@@ -101,13 +99,19 @@ could hold a color hex value, having a colorpicker is more convenient.
 - Stores the variable as a hex value or color name that is valid in CSS files.
 
 ##### Slider (HTML5 range input) #####
-
 '#type' => 'style_settings_slider',
 - Exposes a slider widget (a range) in HTML5 capable browsers (all but <= IE9).
 - Shows the numeric value that corresponds with the handle position.
 - Validation just by providing a min/max and step value.
 - Adds a unit if valid. Input: '1', field_suffix: 'em' => stored variable: '1em'
 - Preset to be used for opacity (min:0, max:1, step:0.01) but can be overriden.
+
+##### A selectable measurement unit (e.g. px, em, %) #####
+To have a select widget after a number field :
+- Put both in a fieldset with the class 'container-inline'.
+- Make sure the number field has NO '#field_suffix'.
+- The unit '#type' => 'select' should be '#required' => TRUE.
+- In the form submit handler concatenate the value and unit vars in one new var.
 
 #### More info ####
 
@@ -132,22 +136,23 @@ Put the following comment at the top of CSS files that contain style variables:
  * have those CSS variables exposed in the settings UI.
  */
 
-An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
+An example for FOO.admin.inc:
 
-  $style_settings_module = l(t('Style (CSS) Settings module'), 'https://drupal.org/project/style_settings', array(
-      'attributes' => array(
-        'title' => t('Style (CSS) Settings | Drupal.org'),
-        'target' => '_blank',
-      ),
-  ));
+// START OF CODE
+
+/**
+ * Implements hook_settings().
+ */
+function FOO_admin_settings() {
+  $form['#submit'][] = 'FOO_admin_settings_submit';
   if (module_exists('style_settings')) {
 
     // Any form API element can be used 
     // A normal textfield. It does not offer any validation by itself.
-    $form['YOURMODULE_caption_align'] = array(
+    $form['FOO_caption_align'] = array(
       '#type' => 'textfield',
       '#title' => t('Caption text align'),
-      '#default_value' => variable_get('YOURMODULE_caption_align', 'center'),
+      '#default_value' => variable_get('FOO_caption_align', 'center'),
       '#size' => 12,
     );
 
@@ -156,7 +161,7 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
 
     // Number example in this case with an appended measurement unit (optional).
     // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
-    $form['YOURMODULE_borderwidth'] = array(
+    $form['FOO_borderwidth'] = array(
       '#type' => 'style_settings_number',
       '#title' => t('Border width'),
       '#step' => 1, // In this case if forces an integer as input.
@@ -164,26 +169,28 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       '#max' => 10, // Defaults to 1 if omitted.
       // The variable default should include a measurement unit if applicable.
       // Wrapped in floatval() to turn it into a number. E.g. '2px' => '2'.
-      '#default_value' => floatval(variable_get('YOURMODULE_borderwidth', '2px')),
+      '#default_value' => floatval(variable_get('FOO_borderwidth', '2px')),
       // The suffix gets added to the input on submit if valid measurement unit.
       '#field_suffix' => 'px',
       // Uncomment the line below to NOT align the field input on the right.
 //      '#attributes' => NULL,
     );
+
     // Color picker example.
-    $form['YOURMODULE_bordercolor'] = array(
+    $form['FOO_bordercolor'] = array(
       '#type' => 'style_settings_colorpicker',
       '#title' => t('Border color'),
-      '#default_value' => variable_get('YOURMODULE_bordercolor', 'IndianRed'),
+      '#default_value' => variable_get('FOO_bordercolor', 'IndianRed'),
     );
+
     // Slider widget example.
-    $form['YOURMODULE_magnifier_icon_opacity'] = array(
+    $form['FOO_magnifier_icon_opacity'] = array(
       '#type' => 'style_settings_slider',
       '#title' => t('Magnifier icon opacity'),
       '#description' => t('0 = transparent. 1 = opaque.'),
       // The variable default should include a measurement unit if applicable.
       // Wrapped in floatval() to turn it into a number. E.g. '2px' => '2'.
-      '#default_value' => floatval(variable_get('YOURMODULE_magnifier_icon_opacity', 0.85)),
+      '#default_value' => floatval(variable_get('FOO_magnifier_icon_opacity', 0.85)),
       // Parameters below could be omitted. It is already preset for opacity.
       '#step' => 0.01,
       '#min' => 0,
@@ -192,22 +199,64 @@ An example for YOURMODULE.settings.inc or YOURMODULE.admin.inc:
       // The suffix gets added to the input on submit if valid measurement unit.
       'field_suffix' => NULL,
     );
+
+    // A selectable measurement unit (e.g. px, em, %) example.
+    $form['FOO_fontsize'] = array(
+      '#type' => 'fieldset', 
+      '#title' => t('Caption font-size'),
+      // Make containing fields align horizontally.
+      '#attributes' => array('class' => array('container-inline')), 
+    );
+    // Number field without a '#field_suffix'.
+    $form['FOO_borderwidth']['FOO_fontsize_value'] = array(
+      '#type' => 'style_settings_number',
+      '#max' => 200, // Defaults to 1 if omitted.
+      '#default_value' => variable_get('FOO_fontsize_value', '85'),
+    );
+    $form['FOO_borderwidth']['FOO_fontsize_unit'] = array(
+      '#type' => 'select',
+      '#options' => array(
+        'px' => t('px'),
+        'em' => t('em'),
+        '%' => t('%'),
+      ),
+      '#default_value' => variable_get('FOO_fontsize_unit', '%'),
+      '#required' => TRUE,
+    );
   }
   else {
-    $form['YOURMODULE_note'] = array(
-      '#markup' => t("Enable the !style_settings_module (<strong>dev version!</strong>) to get them exposed here. They consist of:<ul>
+    $style_settings_module = l(t('Style (CSS) Settings module'), 'https://drupal.org/project/style_settings', array(
+        'attributes' => array(
+          'title' => t('Style (CSS) Settings | Drupal.org'),
+          'target' => '_blank',
+        ),
+    ));
+    $form['FOO_note'] = array(
+      '#markup' => t("Enable the !style_settings_module to get style options exposed here. They consist of:<ul>
           <li> ... </li>
           <li> ... </li>
           <li> ... </li>
         </ul>", array('!style_settings_module' => $style_settings_module)),
     );
   }
+}
 
-Recommended is to add to the form submit handler:
-
+/**
+ * Submit form data.
+ */
+function FOO_admin_settings_submit($form, &$form_state) {
   if (module_exists('style_settings')) {
+    // Concatenate the value and unit in a new variable (the one that will be used in the CSS).
+    variable_set('FOO_fontsize', variable_get('FOO_fontsize_value', '85') . variable_get('FOO_fontsize_unit', '%'));
     _drupal_flush_css_js();
   }
+}
+
+// END OF CODE
+
+Note in the form submit handler:
+
+    _drupal_flush_css_js();
 
 This way changes are visible right away after saving the form. Otherwise it is
 necessary to clear the cache after changing CSS variables at:
