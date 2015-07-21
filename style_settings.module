@@ -233,18 +233,18 @@ function style_settings_element_info() {
     ),
   ));
   $types['style_settings_colorpicker'] = array(
-    '#default_value' => '',
     '#input' => TRUE,
+    '#type' => 'textfield',
     '#theme' => array('textfield'),
     '#theme_wrappers' => array('form_element'),
     '#autocomplete_path' => FALSE,
     '#element_validate' => array('style_settings_color_validate'),
-    '#type' => 'textfield',
     '#size' => 12,
     '#maxlength' => 20,
     '#description' => t('Also shorthand (like #fff) and !colornames are accepted.', array('!colornames' => $colornames)),
     '#prefix' => '<div class="form-item form-type-style-settings-colorpicker">',
     '#suffix' => '<div class="style_settings-picker"></div></div>',
+    '#default_value' => '',
     '#attributes' => array('class' => array('style_settings-colorpicker')),
     '#attached' => array(
       'library' => array(array('system', 'farbtastic')),
@@ -253,7 +253,6 @@ function style_settings_element_info() {
   );
   $types['style_settings_number'] = array(
     '#input' => TRUE,
-    '#type' => 'textfield',
     '#min' => 0,
     '#size' => 4,
     '#process' => array('ajax_process_form'),
@@ -275,6 +274,17 @@ function style_settings_element_info() {
     '#theme' => 'style_settings_slider',
     '#theme_wrappers' => array('form_element'),
   );
+  $types['style_settings_imgurl'] = array(
+    '#input' => TRUE,
+    '#type' => 'textfield',
+    '#description' => t("An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL, for example <em>/sites/default/files/images/some-image.png</em>. Note the leading slash!"),
+    '#theme' => array('textfield'),
+    '#theme_wrappers' => array('form_element'),
+    '#autocomplete_path' => FALSE,
+    '#element_validate' => array('style_settings_imgurl_validate'),
+    '#size' => 80,
+    '#maxlength' => 160,
+  );
   return $types;
 }
 
@@ -290,12 +300,13 @@ function style_settings_color_validate($element, &$form_state) {
   }
 }
 
-/* Validates hex color. Checks for a Color Name first to prevent error if a name
+/* 
+ * Validates hex color. Checks for a Color Name first to prevent error if a name
  * was entered (optional).
+ * 
  * $color: the color hex value stirng to Validates $named: (optional), set to
  * 1 or TRUE to first test if a Named color was passed instead of a Hex value.
  */
-
 function style_settings_validate_html_color($color, $named = TRUE) {
   if ($named) {
     $named = array('aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue', 'darkslategray', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightsteelblue', 'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow', 'yellowgreen');
@@ -394,6 +405,36 @@ function style_settings_valid_number_step($value, $step, $offset = 0.0) {
   $computed_acceptable_error = (double) ($step / pow(2.0, 24));
 
   return $computed_acceptable_error >= $remainder || $remainder >= ($step - $computed_acceptable_error);
+}
+
+/*
+ * Validates an image URL if not empty.
+ * Checks syntax, existence and being an image.
+ */
+function style_settings_imgurl_validate(&$element, &$form_state) {
+  // An image URL with leading or trailing whitespace is still valid in CSS.
+  $url = trim($element['#value']);
+  $name = empty($element['#title']) ? $element['#parents'][0] : $element['#title'];
+  // An empty image URL resulting in url('') is still valid in CSS.
+  if (!empty($url)) {
+    // Get the base URL.
+    global $base_url;
+    // For a relative URL append the base URL.
+    if (parse_url($url, PHP_URL_SCHEME) == '') {
+      $url = $base_url . $url;
+    }
+    $headers = @get_headers($url, 1);
+    if (isset($headers['Content-Type'])) {
+      // Generate an error if the URL isn't an image or returns a 404.
+      if (strpos($headers['Content-Type'], 'image/') === FALSE) {
+        form_set_error($element['#parents'][0], t('%name is not an image, does not exist or something else is wrong with it.', array('%name' => $name)));
+      }
+    }
+    else {
+      // No 'Content-Type' returned.
+      form_set_error($element['#parents'][0], t('%name is not a valid URL.', array('%name' => $name)));
+    }
+  }
 }
 
 /**

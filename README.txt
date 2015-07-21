@@ -1,5 +1,9 @@
 ## Style (CSS) Settings module ##
 
+The content of this file is based on the online documentation that can be found
+at https://www.drupal.org/node/2527412. It is recommended to read it there as it
+is improved, contains links and images, and code samples are syntax highlighted.
+
 https://drupal.org/project/style_settings is intended for theme and module
 maintainers but can be used for customisations by anyone with basic coding
 skills (for example to provide a patch for projects that could use some CSS to
@@ -118,11 +122,16 @@ Accepted attributes, the same as a 'textfield' plus:
 The defaults are preset for the CSS attribute 'opacity' but can be overriden.
 
 ##### A selectable measurement unit (e.g. px, em, %) #####
-To have a select widget after a number field :
+To have a unit select widget after a number field :
 - Put both in a fieldset with the class 'container-inline'.
 - Make sure the number field has NO '#field_suffix'.
 - The unit '#type' => 'select' should be '#required' => TRUE.
 - In the form submit handler concatenate the value and unit vars in one new var.
+
+##### Image URL ####
+'#type' => 'style_settings_imgurl',
+- Accepts an absolute or relative (from base) URL.
+- If not empty, validates the URL syntax, if it is an image and exists (no 404).
 
 #### More info ####
 
@@ -135,6 +144,9 @@ For more information on custom module settings, read:
   https://www.drupal.org/node/1111260
 A simple but complete example of module settings is Drupal core's
 '/modules/update/update.settings.inc'.
+
+Examples how to provide different types of
+Style Settings can be found in the 'code snippets' section below.
 
 
 ### Code snippet examples ###
@@ -149,30 +161,44 @@ Put the following comment at the top of CSS files that contain style variables:
 
 An example for FOO.admin.inc:
 
-// START OF CODE
+Replace FOO with your module's machine name.
 
+<?php
+/**
+ * @file
+ * The admin settings for the FOO module.
+ */
 /**
  * Implements hook_settings().
  */
 function FOO_admin_settings() {
-  $form['#submit'][] = 'FOO_admin_settings_submit';
+  // Put CSS variables together in a fieldset. Remove if only one is given.
+  $form['css_variables'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('CSS variables'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
   if (module_exists('style_settings')) {
-
-    // Any form API element can be used 
-    // A normal textfield. It does not offer any validation by itself.
-    $form['FOO_caption_align'] = array(
+    // When we have a list of CSS variables it is better to collapse it.
+    $form['css_variables']['#collapsed'] = TRUE;
+    //
+    // Any normal form API type can be used 
+    // A normal TEXTFIELD. It does not offer any validation by itself.
+    $form['css_variables']['FOO_caption_align'] = array(
       '#type' => 'textfield',
       '#title' => t('Caption text align'),
       '#default_value' => variable_get('FOO_caption_align', 'center'),
       '#size' => 12,
     );
-
-    // Style Settings offers several form API elements to help developers build
-    // the settings page. Cool UI widgets and built-in validation of user input.
-
-    // Number example in this case with an appended measurement unit (optional).
+    //
+    // The Style Settings module offers several form API elements to help
+    // developers build the settings page. Cool UI widgets and built-in
+    // validation of user input especially designed for CSS attributes.
+    //
+    // NUMBER example in this case with an appended measurement unit (optional).
     // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
-    $form['FOO_borderwidth'] = array(
+    $form['css_variables']['FOO_borderwidth'] = array(
       '#type' => 'style_settings_number',
       '#title' => t('Border width'),
       '#step' => 1, // In this case if forces an integer as input.
@@ -185,17 +211,20 @@ function FOO_admin_settings() {
       '#field_suffix' => 'px',
       // Uncomment the line below to NOT align the field input on the right.
 //      '#attributes' => NULL,
+      // Uncomment the line below to NOT show min, max and step values as help.
+//      '#input_help' => NULL,
     );
-
-    // Color picker example.
-    $form['FOO_bordercolor'] = array(
+    //
+    // COLOR PICKER example.
+    $form['css_variables']['FOO_bordercolor'] = array(
       '#type' => 'style_settings_colorpicker',
       '#title' => t('Border color'),
+      // Besides hex color value also color names are accepted.
       '#default_value' => variable_get('FOO_bordercolor', 'IndianRed'),
     );
-
-    // Slider widget example.
-    $form['FOO_magnifier_icon_opacity'] = array(
+    //
+    // SLIDER WIDGET example.
+    $form['css_variables']['FOO_magnifier_icon_opacity'] = array(
       '#type' => 'style_settings_slider',
       '#title' => t('Magnifier icon opacity'),
       '#description' => t('0 = transparent. 1 = opaque.'),
@@ -206,25 +235,42 @@ function FOO_admin_settings() {
       '#step' => 0.01,
       '#min' => 0,
       '#max' => 1,
-      // Added for demonstration purpose.
       // The suffix gets added to the input on submit if valid measurement unit.
+      // Added for demonstration purpose only.
       'field_suffix' => NULL,
     );
-
-    // A selectable measurement unit (e.g. px, em, %) example.
-    $form['FOO_fontsize'] = array(
+    //
+    // IMAGE URL example.
+    $form['css_variables']['FOO_bgimage'] = array(
+      '#type' => 'style_settings_imgurl',
+      '#title' => t('Background image'),
+      // If you use this for a 'theme', replace 'module' below.
+      '#default_value' => variable_get('FOO_bgimage', '/' . drupal_get_path('module', 'FOO') . '/images/bg-default.jpg'),
+      // In the submit handler below we reset an empty field to the default URL.
+      // This way the user isn't required to know the URL of the default image.
+      '#description' => t('An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL (<em>/sites/..</em>). Leave empty to reset to the default image.'),
+    );
+    //
+    // A SELECTABLE MEASUREMENT UNIT (e.g. px, em, %) example. It goes together
+    // with a submit handler inside the function FOO_admin_settings_submit().
+    $form['css_variables']['FOO_fontsize'] = array(
       '#type' => 'fieldset', 
       '#title' => t('Caption font-size'),
       // Make containing fields align horizontally.
-      '#attributes' => array('class' => array('container-inline')), 
+      '#attributes' => array('class' => array('container-inline')),
+      // Add optionally a field description in the fieldset. NOT in the elements below.
+      // Number field input help (min, max, step) will optionally be appended.
+      '#description' => t('Note: A minimum font-size setting of your browser might interfere.'),
     );
     // Number field without a '#field_suffix'.
-    $form['FOO_borderwidth']['FOO_fontsize_value'] = array(
+    $form['css_variables']['FOO_fontsize']['FOO_fontsize_value'] = array(
       '#type' => 'style_settings_number',
-      '#max' => 200, // Defaults to 1 if omitted.
       '#default_value' => variable_get('FOO_fontsize_value', '85'),
+      // Uncomment the line below to NOT show min, max and step values as help.
+//      '#input_help' => NULL,
     );
-    $form['FOO_borderwidth']['FOO_fontsize_unit'] = array(
+    // A measurement unit select field.
+    $form['css_variables']['FOO_fontsize']['FOO_fontsize_unit'] = array(
       '#type' => 'select',
       '#options' => array(
         'px' => t('px'),
@@ -235,6 +281,8 @@ function FOO_admin_settings() {
       '#required' => TRUE,
     );
   }
+  //
+  // If the Style Settings module is not enabled, provide some instructions.
   else {
     $style_settings_module = l(t('Style (CSS) Settings module'), 'https://drupal.org/project/style_settings', array(
         'attributes' => array(
@@ -242,25 +290,38 @@ function FOO_admin_settings() {
           'target' => '_blank',
         ),
     ));
-    $form['FOO_note'] = array(
+    $form['css_variables']['FOO_note'] = array(
       '#markup' => t("Enable the !style_settings_module to get style options exposed here. They consist of:<ul>
-          <li> ... </li>
+          <li> A caption font-size </li>
           <li> ... </li>
           <li> ... </li>
         </ul>", array('!style_settings_module' => $style_settings_module)),
     );
   }
+  //
+  // Call submit_function() on form submission.
+  $form['#submit'][] = 'FOO_admin_settings_submit';
+  return system_settings_form($form);
 }
-
 /**
  * Submit form data.
  */
 function FOO_admin_settings_submit($form, &$form_state) {
   if (module_exists('style_settings')) {
-    // Concatenate the value and unit in a new variable (the one that will be used in the CSS).
-    variable_set('FOO_fontsize', variable_get('FOO_fontsize_value', '85') . variable_get('FOO_fontsize_unit', '%'));
+    // IMAGE URL: Reset to default if empty. Does not work after a hook_form_FORM_ID_alter().
+    // In that case move it to the submit handler after hook_settings() in the 'parent' form.
+    if (trim($form_state['values']['FOO_bgimage']) == '') {
+      $form_state['values']['FOO_bgimage'] = '/' . drupal_get_path('module', 'FOO') . '/images/bg-default.jpg';
+      drupal_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
+    }
+    //
+    // SELECTABLE MEASUREMENT UNIT: concatenate the value and unit in a new
+    // variable (the one that will be used in the CSS).
+    variable_set('FOO_fontsize', $form_state['values']['FOO_fontsize_value'] . $form_state['values']['FOO_fontsize_unit']);
+    //
+    // Make sure changes are visible right after saving the settings.
     _drupal_flush_css_js();
-  }
+   }
 }
 
 // END OF CODE
