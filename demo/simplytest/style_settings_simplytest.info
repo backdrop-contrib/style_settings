@@ -1,0 +1,9 @@
+name = Style Settings Simplytest
+description = A Simplytest.me demo for this module.
+core = 7.x
+version = 7.x-dev
+
+files[]=style_settings_simplytest.module
+files[]=style_settings_simplytest.install
+
+dependencies[] = style_settings_demo

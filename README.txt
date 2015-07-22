@@ -128,7 +128,7 @@ To have a unit select widget after a number field :
 - The unit '#type' => 'select' should be '#required' => TRUE.
 - In the form submit handler concatenate the value and unit vars in one new var.
 
-##### Image URL ####
+##### Image URL #####
 '#type' => 'style_settings_imgurl',
 - Accepts an absolute or relative (from base) URL.
 - If not empty, validates the URL syntax, if it is an image and exists (no 404).
@@ -245,7 +245,7 @@ function FOO_admin_settings() {
       '#type' => 'style_settings_imgurl',
       '#title' => t('Background image'),
       // If you use this for a 'theme', replace 'module' below.
-      '#default_value' => variable_get('FOO_bgimage', '/' . drupal_get_path('module', 'FOO') . '/images/bg-default.jpg'),
+      '#default_value' => variable_get('FOO_bgimage', '/' . drupal_get_path('module', 'image') . '/sample.png'),
       // In the submit handler below we reset an empty field to the default URL.
       // This way the user isn't required to know the URL of the default image.
       '#description' => t('An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL (<em>/sites/..</em>). Leave empty to reset to the default image.'),
@@ -292,7 +292,7 @@ function FOO_admin_settings() {
     ));
     $form['css_variables']['FOO_note'] = array(
       '#markup' => t("Enable the !style_settings_module to get style options exposed here. They consist of:<ul>
-          <li> A caption font-size </li>
+          <li> A caption font-size.</li>
           <li> ... </li>
           <li> ... </li>
         </ul>", array('!style_settings_module' => $style_settings_module)),
@@ -311,7 +311,7 @@ function FOO_admin_settings_submit($form, &$form_state) {
     // IMAGE URL: Reset to default if empty. Does not work after a hook_form_FORM_ID_alter().
     // In that case move it to the submit handler after hook_settings() in the 'parent' form.
     if (trim($form_state['values']['FOO_bgimage']) == '') {
-      $form_state['values']['FOO_bgimage'] = '/' . drupal_get_path('module', 'FOO') . '/images/bg-default.jpg';
+      $form_state['values']['FOO_bgimage'] = '/' . drupal_get_path('module', 'image') . '/sample.png';
       drupal_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
     }
     //

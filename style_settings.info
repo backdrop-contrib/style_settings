@@ -5,3 +5,5 @@ version = 7.x-dev
 
 files[]=style_settings.module
 files[]=style_settings.install
+
+simplytest_dependencies[] = style_settings_simplytest
