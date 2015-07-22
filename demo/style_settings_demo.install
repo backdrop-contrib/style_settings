@@ -10,9 +10,10 @@
 function style_settings_demo_install() {
   $t = get_t();
   $text = $t('Go and checkout the !config_link.', array(
-    '!config_link' => l($t('Style Settings demo page'), 'admin/config/system/FOO')
+    '!config_link' => l($t('Style Settings demo page'), 'admin/config/system/FOO'),
   ));
   drupal_set_message($text);
+  _drupal_flush_css_js();
 }
 
 /**
@@ -28,4 +29,5 @@ function style_settings_demo_uninstall() {
   variable_del('FOO_caption_align');
   variable_del('FOO_borderwidth');
   variable_del('FOO_bordercolor');
+  _drupal_flush_css_js();
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * @file.
+ * @file
  * Demo to use any (custom) theme setting or Drupal variable in any of your
  * theme or module style sheets (see https://drupal.org/project/style_settings).
  */
@@ -19,10 +19,11 @@ function style_settings_demo_page_build(&$page) {
  * Implements hook_menu().
  */
 function style_settings_demo_menu() {
-  // Here placed in the 'config/SYSTEM' section. Put it in the appropriate section.
+  // Here placed in the 'config/SYSTEM' section. Put it in the appropriate
+  // section.
   $items['admin/config/system/FOO'] = array(
     'title' => 'FOO',
-    'description' => 'FOO settings.',
+    'description' => 'FOO Style Settings demo example.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('FOO_admin_settings'),
     'access arguments' => array('administer site configuration'),
@@ -30,4 +31,3 @@ function style_settings_demo_menu() {
   );
   return $items;
 }
-

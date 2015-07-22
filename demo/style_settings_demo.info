@@ -1,9 +1,5 @@
 name = Style Settings demo
 description = A working example of a settings page for CSS variables.
 core = 7.x
-version = 7.x-dev
-
-files[]=style_settings_demo.module
-files[]=style_settings_demo.install
 
 dependencies[] = style_settings

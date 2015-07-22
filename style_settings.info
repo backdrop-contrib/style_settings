@@ -1,9 +1,6 @@
 name = Style Settings
 description = Use any (custom) theme setting or Drupal variable in any of your theme or module style sheets (CSS).
 core = 7.x
-version = 7.x-dev
 
-files[]=style_settings.module
-files[]=style_settings.install
-
+soft_dependencies[] = style_settings
 simplytest_dependencies[] = style_settings_simplytest

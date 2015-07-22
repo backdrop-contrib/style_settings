@@ -3,6 +3,7 @@
  * @file
  * The admin settings for the FOO module.
  */
+
 /**
  * Implements hook_settings().
  */
@@ -33,7 +34,7 @@ function FOO_admin_settings() {
 
     // A preview area.
     $form['css_variables']['FOO_preview'] = array(
-      '#type' => 'fieldset', 
+      '#type' => 'fieldset',
       '#title' => t('Preview'),
       '#description' => '<p>' . t('Note: Save the form to see your changes.') . '</p>',
       '#collapsible' => TRUE,
@@ -80,11 +81,12 @@ function FOO_admin_settings() {
     // A SELECTABLE MEASUREMENT UNIT (e.g. px, em, %) example. It goes together
     // with a submit handler inside the function FOO_admin_settings_submit().
     $form['css_variables']['FOO_fontsize'] = array(
-      '#type' => 'fieldset', 
+      '#type' => 'fieldset',
       '#title' => t('Caption font-size'),
       // Make containing fields align horizontally.
       '#attributes' => array('class' => array('container-inline')),
-      // Add optionally a field description in the fieldset. NOT in the elements below.
+      // Add optionally a field description in the fieldset. NOT in the elements
+      // below.
       // Number field input help (min, max, step) will optionally be appended.
       '#description' => t('Note: A minimum font-size setting of your browser might interfere.'),
     );
@@ -107,7 +109,7 @@ function FOO_admin_settings() {
       '#required' => TRUE,
     );
 
-    // Any normal form API type can be used 
+    // Any normal form API type can be used.
     // A normal TEXTFIELD. It does not offer any validation by itself.
     $form['css_variables']['FOO_caption_align'] = array(
       '#type' => 'textfield',
@@ -170,8 +172,9 @@ function FOO_admin_settings() {
  */
 function FOO_admin_settings_submit($form, &$form_state) {
   if (module_exists('style_settings')) {
-    // IMAGE URL: Reset to default if empty. Does not work after a hook_form_FORM_ID_alter().
-    // In that case move it to the submit handler after hook_settings() in the 'parent' form.
+    // IMAGE URL: Reset to default if empty. Does not work after a
+    // hook_form_FORM_ID_alter(). In that case move it to the submit handler
+    // after hook_settings() in the 'parent' form.
     if (trim($form_state['values']['FOO_bgimage']) == '') {
       $form_state['values']['FOO_bgimage'] = '/' . drupal_get_path('module', 'image') . '/sample.png';
       drupal_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
@@ -183,5 +186,5 @@ function FOO_admin_settings_submit($form, &$form_state) {
     //
     // Make sure changes are visible right after saving the settings.
     _drupal_flush_css_js();
-   }
+  }
 }

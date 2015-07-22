@@ -1,11 +1,11 @@
 <?php
-define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
-
 /**
- * @file.
+ * @file
  * Use any (custom) theme setting or Drupal variable in any of your theme or
  * module style sheets (see https://drupal.org/project/style_settings).
  */
+
+define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
 
 /**
  * Implements hook_page_build().
@@ -14,6 +14,12 @@ function style_settings_page_build(&$page) {
   drupal_add_css(drupal_get_path('module', 'style_settings') . '/css/style_settings.css', array(
     'group' => CSS_DEFAULT,
     'every_page' => TRUE,
+  ));
+  // Make sure the site's custom CSS is processed last.
+  drupal_add_css(drupal_get_path('module', 'style_settings') . '/css/custom.css', array(
+    'group' => CSS_THEME,
+    'every_page' => TRUE,
+    'weight' => 99,
   ));
 }
 
@@ -91,7 +97,7 @@ function style_settings_rewrite($path, $reset = FALSE) {
   // Get the active theme and all available persistent variables ($conf).
   global $theme_key, $conf;
   // Caching hashed 'new paths' as it is expensive to calculate these values.
-  $cid = 'style_settings_'. $path;
+  $cid = 'style_settings_' . $path;
   $new_path_cached = cache_get($cid);
   $new_path = isset($new_path_cached->data) ? $new_path_cached->data : FALSE;
   // We need a new unique key (and rewrite) if the original CSS file changed.
@@ -129,11 +135,11 @@ function style_settings_rewrite($path, $reset = FALSE) {
       file_unmanaged_save_data($new_data, $new_path, FILE_EXISTS_REPLACE);
       $watchdog = l(t('Recent log messages'), 'admin/reports/dblog', array(
         'attributes' => array(
-        'title' => t('Home » Administration » Reports'),
+          'title' => t('Home » Administration » Reports'),
         ),
       ));
       drupal_set_message(t('Style Settings CSS files have been rewritten successfully. Check !watchdog for details.', array('!watchdog' => $watchdog)), 'status', FALSE);
-      watchdog('style_settings', 'Rewritten successfully %path to %new_path' , array('%path' => $path, '%new_path' => $new_path));
+      watchdog('style_settings', 'Rewritten successfully %path to %new_path', array('%path' => $path, '%new_path' => $new_path));
     }
   }
 
@@ -295,21 +301,162 @@ function style_settings_color_validate($element, &$form_state) {
   if (!empty($element['#value'])) {
     // Double check that we really have an hexadecimal value.
     if (style_settings_validate_html_color($element['#value'], 1) == FALSE) {
-      form_error($element, "<em>". check_plain($element['#value']) ."</em>". t(' is not a valid color'));
+      form_error($element, '<em>' . check_plain($element['#value']) . '</em> ' . t('is not a valid color'));
     }
   }
 }
 
-/* 
+/**
  * Validates hex color. Checks for a Color Name first to prevent error if a name
  * was entered (optional).
- * 
+ *
  * $color: the color hex value stirng to Validates $named: (optional), set to
  * 1 or TRUE to first test if a Named color was passed instead of a Hex value.
  */
 function style_settings_validate_html_color($color, $named = TRUE) {
   if ($named) {
-    $named = array('aliceblue', 'antiquewhite', 'aqua', 'aquamarine', 'azure', 'beige', 'bisque', 'black', 'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgray', 'darkgreen', 'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred', 'darksalmon', 'darkseagreen', 'darkslateblue', 'darkslategray', 'darkturquoise', 'darkviolet', 'deeppink', 'deepskyblue', 'dimgray', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'gray', 'green', 'greenyellow', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgreen', 'lightgrey', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightsteelblue', 'lightyellow', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'white', 'whitesmoke', 'yellow', 'yellowgreen');
+    $named = array(
+      'aliceblue',
+      'antiquewhite',
+      'aqua',
+      'aquamarine',
+      'azure',
+      'beige',
+      'bisque',
+      'black',
+      'blanchedalmond',
+      'blue',
+      'blueviolet',
+      'brown',
+      'burlywood',
+      'cadetblue',
+      'chartreuse',
+      'chocolate',
+      'coral',
+      'cornflowerblue',
+      'cornsilk',
+      'crimson',
+      'cyan',
+      'darkblue',
+      'darkcyan',
+      'darkgoldenrod',
+      'darkgray',
+      'darkgreen',
+      'darkkhaki',
+      'darkmagenta',
+      'darkolivegreen',
+      'darkorange',
+      'darkorchid',
+      'darkred',
+      'darksalmon',
+      'darkseagreen',
+      'darkslateblue',
+      'darkslategray',
+      'darkturquoise',
+      'darkviolet',
+      'deeppink',
+      'deepskyblue',
+      'dimgray',
+      'dodgerblue',
+      'firebrick',
+      'floralwhite',
+      'forestgreen',
+      'fuchsia',
+      'gainsboro',
+      'ghostwhite',
+      'gold',
+      'goldenrod',
+      'gray',
+      'green',
+      'greenyellow',
+      'honeydew',
+      'hotpink',
+      'indianred',
+      'indigo',
+      'ivory',
+      'khaki',
+      'lavender',
+      'lavenderblush',
+      'lawngreen',
+      'lemonchiffon',
+      'lightblue',
+      'lightcoral',
+      'lightcyan',
+      'lightgoldenrodyellow',
+      'lightgreen',
+      'lightgrey',
+      'lightpink',
+      'lightsalmon',
+      'lightseagreen',
+      'lightskyblue',
+      'lightslategray',
+      'lightsteelblue',
+      'lightyellow',
+      'lime',
+      'limegreen',
+      'linen',
+      'magenta',
+      'maroon',
+      'mediumaquamarine',
+      'mediumblue',
+      'mediumorchid',
+      'mediumpurple',
+      'mediumseagreen',
+      'mediumslateblue',
+      'mediumspringgreen',
+      'mediumturquoise',
+      'mediumvioletred',
+      'midnightblue',
+      'mintcream',
+      'mistyrose',
+      'moccasin',
+      'navajowhite',
+      'navy',
+      'oldlace',
+      'olive',
+      'olivedrab',
+      'orange',
+      'orangered',
+      'orchid',
+      'palegoldenrod',
+      'palegreen',
+      'paleturquoise',
+      'palevioletred',
+      'papayawhip',
+      'peachpuff',
+      'peru',
+      'pink',
+      'plum',
+      'powderblue',
+      'purple',
+      'red',
+      'rosybrown',
+      'royalblue',
+      'saddlebrown',
+      'salmon',
+      'sandybrown',
+      'seagreen',
+      'seashell',
+      'sienna',
+      'silver',
+      'skyblue',
+      'slateblue',
+      'slategray',
+      'snow',
+      'springgreen',
+      'steelblue',
+      'tan',
+      'teal',
+      'thistle',
+      'tomato',
+      'turquoise',
+      'violet',
+      'wheat',
+      'white',
+      'whitesmoke',
+      'yellow',
+      'yellowgreen',
+    );
     if (in_array(strtolower($color), $named)) {
       return $color;
     }
@@ -407,7 +554,7 @@ function style_settings_valid_number_step($value, $step, $offset = 0.0) {
   return $computed_acceptable_error >= $remainder || $remainder >= ($step - $computed_acceptable_error);
 }
 
-/*
+/**
  * Validates an image URL if not empty.
  * Checks syntax, existence and being an image.
  */
@@ -443,8 +590,22 @@ function style_settings_imgurl_validate(&$element, &$form_state) {
 function _style_settings_number_value_callback($element, $input = FALSE, &$form_state) {
   if ($input !== FALSE) {
     if (isset($element['#field_suffix'])) {
-    // If the field suffix is a valid unit, use it.
-      if (in_array(strtolower($element['#field_suffix']), array('px', 'em', '%', 'rem', 'cm', 'ex', 'in', 'mm', 'pc', 'pt', 'vh', 'vw', 'vmin'))) {
+      // If the field suffix is a valid unit, use it.
+      if (in_array(strtolower($element['#field_suffix']), array(
+        'px',
+        'em',
+        '%',
+        'rem',
+        'cm',
+        'ex',
+        'in',
+        'mm',
+        'pc',
+        'pt',
+        'vh',
+        'vw',
+        'vmin',
+      ))) {
         return $form_state['input'][$element['#name']] . $element['#field_suffix'];
       }
       else {
@@ -457,8 +618,7 @@ function _style_settings_number_value_callback($element, $input = FALSE, &$form_
   }
   elseif (!empty($element['#default_value'])) {
     return $element['#default_value'];
-  } 
-  return;
+  }
 }
 
 /**

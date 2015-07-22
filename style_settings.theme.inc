@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Theme form elements.
+ */
 
 /**
  * Returns HTML for a number form element.
@@ -14,7 +18,18 @@
 function theme_style_settings_number($variables) {
   $element = $variables['element'];
   $element['#attributes']['type'] = 'text';
-  element_set_attributes($element, array('id', 'name', 'value', 'step', 'min', 'max', 'size', 'maxlength', 'placeholder', 'input_help'));
+  element_set_attributes($element, array(
+    'id',
+    'name',
+    'value',
+    'step',
+    'min',
+    'max',
+    'size',
+    'maxlength',
+    'placeholder',
+    'input_help',
+  ));
   _form_set_class($element, array('form-text'));
   $min = isset($element['#min']) ? t('Min') . '=' . $element['#min'] : '';
   $max = isset($element['#max']) ? '&nbsp;&nbsp;' . t('Max') . '=' . $element['#max'] : '';
@@ -42,7 +57,14 @@ function theme_style_settings_slider($variables) {
   $id = $element['#parents'][0];
   $element['#attributes']['type'] = 'range';
   $element['#attributes']['oninput'] = 'showValue' . $id . '(this.value)';
-  element_set_attributes($element, array('id', 'name', 'value', 'step', 'min', 'max'));
+  element_set_attributes($element, array(
+    'id',
+    'name',
+    'value',
+    'step',
+    'min',
+    'max',
+  ));
   _form_set_class($element, array('form-text', 'form-range'));
   $output = '<input' . drupal_attributes($element['#attributes']) . ' /> 
     <span id="' . $id . '">' . $element['#attributes']['value'] . '</span>

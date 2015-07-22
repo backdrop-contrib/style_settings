@@ -2,7 +2,8 @@
 
 The content of this file is based on the online documentation that can be found
 at https://www.drupal.org/node/2527412. It is recommended to read it there as it
-is improved, contains links and images, and code samples are syntax highlighted.
+is improved, contains links and images, and code examples are syntax
+highlighted.
 
 https://drupal.org/project/style_settings is intended for theme and module
 maintainers but can be used for customisations by anyone with basic coding
@@ -21,10 +22,14 @@ are included in the CSS aggregation mechanism.
 
 ### How to add configurable CSS to your module or theme? ###
 
-- Add to your '.info' file:
+- For modules and themes add to your '.info' file:
     soft_dependencies[] = style_settings
   OR if you want to make the Style (CSS) Settings module required:
     dependencies[] = style_settings
+  For a site's custom CSS just put it in the existing dedicated file at
+  'sites/all/modules/style_settings/css/custom.css'. This is in fact an ideal
+  way to give a webmaster limited and validated control over a site's styling
+  through a UI.
 - Wrap CSS values you want to be configurable in comments, including its unit
   (px, em, %) if present.
   An example for a module:
@@ -121,13 +126,6 @@ Accepted attributes, the same as a 'textfield' plus:
 '#step' => [multiple of, defaults to 0.01],
 The defaults are preset for the CSS attribute 'opacity' but can be overriden.
 
-##### A selectable measurement unit (e.g. px, em, %) #####
-To have a unit select widget after a number field :
-- Put both in a fieldset with the class 'container-inline'.
-- Make sure the number field has NO '#field_suffix'.
-- The unit '#type' => 'select' should be '#required' => TRUE.
-- In the form submit handler concatenate the value and unit vars in one new var.
-
 ##### Image URL #####
 '#type' => 'style_settings_imgurl',
 - Accepts an absolute or relative (from base) URL.
@@ -145,8 +143,19 @@ For more information on custom module settings, read:
 A simple but complete example of module settings is Drupal core's
 '/modules/update/update.settings.inc'.
 
-Examples how to provide different types of
-Style Settings can be found in the 'code snippets' section below.
+##### A selectable measurement unit (e.g. px, em, %) #####
+To have a unit select widget after a number field :
+- Put both in a fieldset with the class 'container-inline'.
+- Make sure the number field has NO '#field_suffix'.
+- The unit '#type' => 'select' should be '#required' => TRUE.
+- In the form submit handler concatenate the value and unit variables in a new
+  one.
+
+Examples how to provide different types of Style Settings can be found in the
+'code snippets' section below. Alternatively you can take a look at how things
+are done in the module's demo at 'sites/all/modules/style_settings/demo'. It
+includes also an example of a 'preview area' to make style changes visible in
+the settings form itself.
 
 
 ### Code snippet examples ###
