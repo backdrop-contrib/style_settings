@@ -267,7 +267,7 @@ function style_settings_element_info() {
     '#theme' => 'style_settings_number',
     '#theme_wrappers' => array('form_element'),
     '#input_help' => TRUE,
-    '#attributes' => array('class' => array('style_settings-form-align')),
+    '#attributes' => array('class' => array('style-settings-form-align')),
   );
   $types['style_settings_slider'] = array(
     '#input' => TRUE,
@@ -282,12 +282,11 @@ function style_settings_element_info() {
   );
   $types['style_settings_imgurl'] = array(
     '#input' => TRUE,
-    '#type' => 'textfield',
     '#description' => t("An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL, for example <em>/sites/default/files/images/some-image.png</em>. Note the leading slash!"),
-    '#theme' => array('textfield'),
+    '#theme' => 'style_settings_imgurl',
     '#theme_wrappers' => array('form_element'),
-    '#autocomplete_path' => FALSE,
     '#element_validate' => array('style_settings_imgurl_validate'),
+    '#suffix' => '</div>',
     '#size' => 80,
     '#maxlength' => 160,
   );
@@ -632,6 +631,11 @@ function style_settings_theme() {
       'file' => 'style_settings.theme.inc',
     ),
     'style_settings_slider' => array(
+      'arguments' => array('element' => NULL),
+      'render element' => 'element',
+      'file' => 'style_settings.theme.inc',
+    ),
+    'style_settings_imgurl' => array(
       'arguments' => array('element' => NULL),
       'render element' => 'element',
       'file' => 'style_settings.theme.inc',

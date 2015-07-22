@@ -1,0 +1,9 @@
+/* To have an input value close to its unit for #type 'style_settings_number'.*/
+.style-settings-form-align {
+  text-align: left;
+}
+
+div.style-settings-image-preview {
+  float: right;
+  padding: 0 0 0 10px;
+}

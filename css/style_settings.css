@@ -1,4 +1,18 @@
 /* To have an input value close to its unit for #type 'style_settings_number'.*/
-.style_settings-form-align {
-  text-align: right;
+.style-settings-form-align {
+  text-align: right; /* LTR */
+}
+
+div.style-settings-image-preview {
+  float: left; /* LTR */
+  padding: 0 10px 0 0; /* LTR */
+}
+
+div.style-settings-image-preview img {
+  max-width: 150px;
+  max-height: 75px;
+}
+
+.form-item.form-type-style-settings-imgurl {
+  overflow: auto;
 }

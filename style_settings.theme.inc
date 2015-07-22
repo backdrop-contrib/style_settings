@@ -66,13 +66,44 @@ function theme_style_settings_slider($variables) {
     'max',
   ));
   _form_set_class($element, array('form-text', 'form-range'));
-  $output = '<input' . drupal_attributes($element['#attributes']) . ' /> 
-    <span id="' . $id . '">' . $element['#attributes']['value'] . '</span>
-    <script type="text/javascript">
+  $output = '<input' . drupal_attributes($element['#attributes']) . ' />';
+  $output .= '<span id="' . $id . '">';
+  $output .= $element['#attributes']['value'];
+  $output .= '</span>';
+  $output .= '<script type="text/javascript">
     function showValue' . $id . '(newValue) {
       document.getElementById("' . $id . '").innerHTML=newValue;
     }
     </script>';
+
+  return $output;
+}
+
+/**
+ * Returns HTML for an image URL form element.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #title, #value, #description, #size, #maxlength,
+ *     #required, #attributes, #autocomplete_path.
+ *
+ * @ingroup themeable
+ */
+function theme_style_settings_imgurl($variables) {
+  $element = $variables['element'];
+  $element['#attributes']['type'] = 'text';
+  element_set_attributes($element, array('id', 'name', 'value', 'size', 'maxlength'));
+  _form_set_class($element, array('form-text'));
+  $output = '';
+  $value = trim($element['#attributes']['value']);
+  if (!empty($value)) {
+    $output .= '<div class="style-settings-image-preview">';
+    $output .= '<img typeof="foaf:Image" src="' . $element['#attributes']['value'] . '">';
+    $output .= '</div>';
+  }
+  $output .= '<div class="style-settings-image-data">';
+  $output .= '<input' . drupal_attributes($element['#attributes']) . ' />';
 
   return $output;
 }
