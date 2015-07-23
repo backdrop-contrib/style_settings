@@ -29,7 +29,7 @@ function style_settings_simplytest_install() {
   $node->status = 1;
   $node->promote = 1;
   $node->title = $t('Demo of the Style (CSS) Settings module.');
-  $node->body['und'][0]['value'] = $t('<p>Login and check out some example Style Settings <strong><em><a href="/admin/config/system/FOO">HERE</a></em></strong>.</p><div class="style_settings-preview"><div class="style_settings-preview-swatch"><div class="style_settings-preview-object"></div></div><div class="style_settings-preview-caption">This is a caption.</div></div><!--break-->');
+  $node->body['und'][0]['value'] = $t('<p>Log in and check out some example Style Settings <strong><em><a href="/admin/config/system/FOO">HERE</a></em></strong>.</p><div class="style_settings-preview"><div class="style_settings-preview-swatch"><div class="style_settings-preview-object"></div></div><div class="style_settings-preview-caption">This is a caption.</div></div><!--break-->');
   $node->body['und'][0]['format'] = 'full_html';
 
   node_save($node);

@@ -21,7 +21,7 @@ function FOO_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#description' => t("This example settings form shows the form API elements offered by the !style_settings_module. They consist of:<ul>
-      <li> An image with optional file upload.</li>
+      <li> An image URL with optional file upload.</li>
       <li> A slider (HTML5 range).</li>
       <li> A number.</li>
       <li> A combined value with unit example.</li>
@@ -58,7 +58,7 @@ function FOO_admin_settings() {
     ));
     $form['css_variables']['FOO_image'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Image source'),
+      '#title' => t('IMAGE SOURCE'),
       // Make containing fields align horizontally.
       '#attributes' => array('class' => array('container-inline')),
       '#description' => t('An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL (<em>/sites/..</em>). Leave all empty to reset to the default image.<br />Try with: !sample', array('!sample' => $sample)),
@@ -89,7 +89,7 @@ function FOO_admin_settings() {
     // SLIDER WIDGET example.
     $form['css_variables']['FOO_img_opacity'] = array(
       '#type' => 'style_settings_slider',
-      '#title' => t('Image opacity'),
+      '#title' => t('IMAGE OPACITY'),
       '#description' => t('0 = transparent. 1 = opaque.'),
       // The variable default should include a measurement unit if applicable.
       // Wrapped in floatval() to turn it into a number. E.g. '2px' => '2'.
@@ -107,7 +107,7 @@ function FOO_admin_settings() {
     // with a submit handler inside the 'function FOO_admin_settings_submit()'.
     $form['css_variables']['FOO_fontsize'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Caption font-size'),
+      '#title' => t('CAPTION FONT-SIZE'),
       // Make containing fields align horizontally.
       '#attributes' => array('class' => array('container-inline')),
       // Add optionally a description to the fieldset. NOT to the member fields.
@@ -137,7 +137,7 @@ function FOO_admin_settings() {
     // A normal TEXTFIELD. It does not offer any validation by itself.
     $form['css_variables']['FOO_caption_align'] = array(
       '#type' => 'textfield',
-      '#title' => t('Caption text align'),
+      '#title' => t('CAPTION TEXT ALIGN'),
       '#default_value' => variable_get('FOO_caption_align', 'center'),
       '#description' => t('A normal TEXTFIELD. It does not offer any validation by itself.'),
       '#size' => 12,
@@ -151,7 +151,7 @@ function FOO_admin_settings() {
     // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
     $form['css_variables']['FOO_borderwidth'] = array(
       '#type' => 'style_settings_number',
-      '#title' => t('Caption border width'),
+      '#title' => t('CAPTION BORDER WIDTH'),
       '#description' => t("NUMBER example, in this case with a measurement unit (gets also appended to the stored variable).<br />Automatically validated based on the passed form attributes '#min', '#max' and '#step'."),
       '#step' => 1, // In this case if forces an integer as input.
       '#min' => 0, // Could be omitted. Defaults to 0. Set to NULL to ignore.
@@ -170,7 +170,7 @@ function FOO_admin_settings() {
     // COLOR PICKER example.
     $form['css_variables']['FOO_bordercolor'] = array(
       '#type' => 'style_settings_colorpicker',
-      '#title' => t('Caption border color'),
+      '#title' => t('CAPTION BORDER COLOR'),
       // Besides hex color value also color names are accepted.
       '#default_value' => variable_get('FOO_bordercolor', 'IndianRed'),
     );
