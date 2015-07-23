@@ -282,7 +282,6 @@ function style_settings_element_info() {
   );
   $types['style_settings_imgurl'] = array(
     '#input' => TRUE,
-    '#description' => t("An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL, for example <em>/sites/default/files/images/some-image.png</em>. Note the leading slash!"),
     '#theme' => 'style_settings_imgurl',
     '#theme_wrappers' => array('form_element'),
     '#element_validate' => array('style_settings_imgurl_validate'),

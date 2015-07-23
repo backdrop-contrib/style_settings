@@ -16,3 +16,11 @@ div.style-settings-image-preview img {
 .form-item.form-type-style-settings-imgurl {
   overflow: auto;
 }
+
+fieldset.container-inline .fieldset-wrapper .form-item.form-type-managed-file {
+  float: right; /* LTR */
+}
+
+fieldset.container-inline .fieldset-wrapper .messages.status {
+  display: none;
+}

@@ -21,8 +21,10 @@ function style_settings_demo_install() {
  */
 function style_settings_demo_uninstall() {
   // Delete all variables set in variable table.
-  variable_del('FOO_bgimage');
-  variable_del('FOO_magnifier_icon_opacity');
+  variable_del('FOO_imgupload');
+  variable_del('FOO_imgupload_url');
+  variable_del('FOO_imgurl');
+  variable_del('FOO_img_opacity');
   variable_del('FOO_fontsize_value');
   variable_del('FOO_fontsize_unit');
   variable_del('FOO_fontsize');

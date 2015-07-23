@@ -21,7 +21,7 @@ function FOO_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#description' => t("This example settings form shows the form API elements offered by the !style_settings_module. They consist of:<ul>
-      <li> An image URL.</li>
+      <li> An image with optional file upload.</li>
       <li> A slider (HTML5 range).</li>
       <li> A number.</li>
       <li> A combined value with unit example.</li>
@@ -44,31 +44,56 @@ function FOO_admin_settings() {
       '#markup' => '<div class="style_settings-preview"><div class="style_settings-preview-swatch"><div class="style_settings-preview-object"></div></div><div class="style_settings-preview-caption">This is a caption.</div></div>',
     );
 
-    // IMAGE URL example.
+    // IMAGE URL field with an optional file UPLOAD. It goes together with a
+    // submit handler inside the 'function FOO_admin_settings_submit()'.
+    // If you use this code in your project you should either declare the core
+    // 'image' module as a dependency in the '.info' file or wrap it inside:
+    //   if (module_exists('image')) { .. }
+    // You could also renounce to the file upload and use a URL field only.
     $sample = l(t('https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=300&q=75&w=400'), 'https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=300&q=75&w=400', array(
         'attributes' => array(
           'title' => t('photo-1414450397866-85f90db48714 (400×300) | Milo McDowell | Unsplash'),
           'target' => '_blank',
         ),
     ));
-    $form['css_variables']['FOO_bgimage'] = array(
+    $form['css_variables']['FOO_image'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Image source'),
+      // Make containing fields align horizontally.
+      '#attributes' => array('class' => array('container-inline')),
+      '#description' => t('An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL (<em>/sites/..</em>). Leave all empty to reset to the default image.<br />Try with: !sample', array('!sample' => $sample)),
+    );
+    // IMAGE UPLOAD example.
+    $form['css_variables']['FOO_image']['FOO_imgupload'] = array(
+      '#type' => 'managed_file',
+      '#description' => t('Alternatively upload an image. Visible after form submit.'),
+      '#default_value' => variable_get('FOO_imgupload', ''),
+      '#size' => 40,
+      '#upload_location' => 'public://FOO/',
+      '#theme' => 'image_widget',
+    ); 
+    if (!variable_get('FOO_imgupload', '')) {
+      variable_set('FOO_imgupload_url', '');
+    }
+    // IMAGE URL example.
+    $uploaded_url = variable_get('FOO_imgupload_url', '');
+    $default = empty($uploaded_url) ? variable_get('FOO_imgurl', '/' . drupal_get_path('module', 'image') . '/sample.png') : $uploaded_url;
+    $form['css_variables']['FOO_image']['FOO_imgurl'] = array(
       '#type' => 'style_settings_imgurl',
-      '#title' => t('Image URL'),
       // If you use this for a 'theme', replace 'module' below.
-      '#default_value' => variable_get('FOO_bgimage', '/' . drupal_get_path('module', 'image') . '/sample.png'),
+      '#default_value' => $default,
       // In the submit handler below we reset an empty field to the default URL.
       // This way the user isn't required to know the URL of the default image.
-      '#description' => t('An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL (<em>/sites/..</em>). Leave empty to reset to the default image.<br />Try with: !sample', array('!sample' => $sample)),
     );
 
     // SLIDER WIDGET example.
-    $form['css_variables']['FOO_magnifier_icon_opacity'] = array(
+    $form['css_variables']['FOO_img_opacity'] = array(
       '#type' => 'style_settings_slider',
       '#title' => t('Image opacity'),
       '#description' => t('0 = transparent. 1 = opaque.'),
       // The variable default should include a measurement unit if applicable.
       // Wrapped in floatval() to turn it into a number. E.g. '2px' => '2'.
-      '#default_value' => floatval(variable_get('FOO_magnifier_icon_opacity', 0.9)),
+      '#default_value' => floatval(variable_get('FOO_img_opacity', 0.9)),
       // Parameters below could be omitted. It is already preset for opacity.
       '#step' => 0.01,
       '#min' => 0,
@@ -79,14 +104,13 @@ function FOO_admin_settings() {
     );
 
     // A SELECTABLE MEASUREMENT UNIT (e.g. px, em, %) example. It goes together
-    // with a submit handler inside the function FOO_admin_settings_submit().
+    // with a submit handler inside the 'function FOO_admin_settings_submit()'.
     $form['css_variables']['FOO_fontsize'] = array(
       '#type' => 'fieldset',
       '#title' => t('Caption font-size'),
       // Make containing fields align horizontally.
       '#attributes' => array('class' => array('container-inline')),
-      // Add optionally a field description in the fieldset. NOT in the elements
-      // below.
+      // Add optionally a description to the fieldset. NOT to the member fields.
       // Number field input help (min, max, step) will optionally be appended.
       '#description' => t('Note: A minimum font-size setting of your browser might interfere.'),
     );
@@ -118,11 +142,11 @@ function FOO_admin_settings() {
       '#description' => t('A normal TEXTFIELD. It does not offer any validation by itself.'),
       '#size' => 12,
     );
-    //
+
     // The Style Settings module offers several form API elements to help
     // developers build the settings page. Cool UI widgets and built-in
     // validation of user input especially designed for CSS attributes.
-    //
+
     // NUMBER example in this case with an appended measurement unit (optional).
     // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
     $form['css_variables']['FOO_borderwidth'] = array(
@@ -142,7 +166,7 @@ function FOO_admin_settings() {
       // Uncomment the line below to NOT show min, max and step values as help.
 //      '#input_help' => NULL,
     );
-    //
+
     // COLOR PICKER example.
     $form['css_variables']['FOO_bordercolor'] = array(
       '#type' => 'style_settings_colorpicker',
@@ -151,7 +175,7 @@ function FOO_admin_settings() {
       '#default_value' => variable_get('FOO_bordercolor', 'IndianRed'),
     );
   }
-  //
+
   // If the Style Settings module is not enabled, provide some instructions.
   else {
     $form['css_variables']['FOO_note'] = array(
@@ -162,28 +186,42 @@ function FOO_admin_settings() {
         </ul>", array('!style_settings_module' => $style_settings_module)),
     );
   }
-  //
+
   // Call submit_function() on form submission.
   $form['#submit'][] = 'FOO_admin_settings_submit';
   return system_settings_form($form);
 }
+
 /**
  * Submit form data.
  */
 function FOO_admin_settings_submit($form, &$form_state) {
   if (module_exists('style_settings')) {
+    //IMAGE UPLOAD.
+    if (!empty($form_state['values']['FOO_imgupload'])) {
+      $image = file_load($form_state['values']['FOO_imgupload']);
+      $url = '/' . variable_get('file_public_path', conf_path() . '/files') . '/' . file_uri_target($image->uri);
+      variable_set('FOO_imgupload_url', $url);
+      // If we have an uploaded file, use the URL of it.
+      $form_state['values']['FOO_imgurl'] = $url;
+      $image->status = FILE_STATUS_PERMANENT;
+      file_save($image);
+      // Add a reference to prevent warnings.
+      file_usage_add($image, 'style_settings', 'FOO_upload', $image->fid);
+    }
+
     // IMAGE URL: Reset to default if empty. Does not work after a
     // hook_form_FORM_ID_alter(). In that case move it to the submit handler
     // after hook_settings() in the 'parent' form.
-    if (trim($form_state['values']['FOO_bgimage']) == '') {
-      $form_state['values']['FOO_bgimage'] = '/' . drupal_get_path('module', 'image') . '/sample.png';
+    if (trim($form_state['values']['FOO_imgurl']) == '') {
+      $form_state['values']['FOO_imgurl'] = '/' . drupal_get_path('module', 'image') . '/sample.png';
       drupal_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
     }
-    //
+
     // SELECTABLE MEASUREMENT UNIT: concatenate the value and unit in a new
     // variable (the one that will be used in the CSS).
     variable_set('FOO_fontsize', $form_state['values']['FOO_fontsize_value'] . $form_state['values']['FOO_fontsize_unit']);
-    //
+
     // Make sure changes are visible right after saving the settings.
     _drupal_flush_css_js();
   }
