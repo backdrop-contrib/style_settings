@@ -92,6 +92,8 @@ function theme_style_settings_slider($variables) {
  */
 function theme_style_settings_imgurl($variables) {
   $element = $variables['element'];
+  // A unique identifier to target the preview with ajax/JS to refresh.
+  $id = $element['#parents'][0];
   $element['#attributes']['type'] = 'text';
   element_set_attributes($element, array('id', 'name', 'value', 'size', 'maxlength'));
   _form_set_class($element, array('form-text'));
@@ -99,7 +101,9 @@ function theme_style_settings_imgurl($variables) {
   $value = trim($element['#attributes']['value']);
   if (!empty($value)) {
     $output .= '<div class="style-settings-image-preview">';
-    $output .= '<img typeof="foaf:Image" src="' . $element['#attributes']['value'] . '">';
+    $output .= '<div class="style-settings-checkerboard">';
+    $output .= '<img  id="' . $id . '-image-preview" typeof="foaf:Image" src="' . $element['#attributes']['value'] . '">';
+    $output .= '</div>';
     $output .= '</div>';
   }
   $output .= '<div class="style-settings-image-data">';

@@ -5,7 +5,7 @@
 
 div.style-settings-image-preview {
   float: right;
-  padding: 0 0 0 10px;
+  padding: 0 0 10px 10px;
 }
 
 fieldset.container-inline .fieldset-wrapper .form-item.form-type-managed-file {
