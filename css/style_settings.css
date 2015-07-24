@@ -8,9 +8,23 @@ div.style-settings-image-preview {
   padding: 0 10px 0 0; /* LTR */
 }
 
+/* Create a checkerboard background to verify the image opacity level.*/
 div.style-settings-image-preview img {
   max-width: 150px;
   max-height: 75px;
+  border: solid LightGrey 1px;
+  background-image: -moz-linear-gradient(45deg, Gray 25%, transparent 25%),
+  -moz-linear-gradient(-45deg, Gray 25%, transparent 25%),
+  -moz-linear-gradient(45deg, transparent 75%, Gray 75%),
+  -moz-linear-gradient(-45deg, transparent 75%, Gray 75%);
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, Gray), color-stop(0.25, transparent)),
+  -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.25, Gray), color-stop(0.25, transparent)),
+  -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.75, transparent), color-stop(0.75, Gray)),
+  -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.75, transparent), color-stop(0.75, Gray));
+  background-position: 0 0, 5px 0, 5px -5px, 0 5px;
+  -webkit-background-size: 10px 10px;
+     -moz-background-size: 10px 10px;
+          background-size: 10px 10px;
 }
 
 .form-item.form-type-style-settings-imgurl {

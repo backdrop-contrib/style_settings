@@ -12,14 +12,15 @@ div.style_settings-preview-swatch {
   position: relative;
   width: 400px;
   height: 300px;
-  background-image: -moz-linear-gradient(45deg, #000 25%, transparent 25%),
-  -moz-linear-gradient(-45deg, #000 25%, transparent 25%),
-  -moz-linear-gradient(45deg, transparent 75%, #000 75%),
-  -moz-linear-gradient(-45deg, transparent 75%, #000 75%);
-  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, #000), color-stop(0.25, transparent)),
-  -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.25, #000), color-stop(0.25, transparent)),
-  -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.75, transparent), color-stop(0.75, #000)),
-  -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.75, transparent), color-stop(0.75, #000));
+  border: solid LightGrey 1px;
+  background-image: -moz-linear-gradient(45deg, Gray 25%, transparent 25%),
+  -moz-linear-gradient(-45deg, Gray 25%, transparent 25%),
+  -moz-linear-gradient(45deg, transparent 75%, Gray 75%),
+  -moz-linear-gradient(-45deg, transparent 75%, Gray 75%);
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, Gray), color-stop(0.25, transparent)),
+  -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.25, Gray), color-stop(0.25, transparent)),
+  -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.75, transparent), color-stop(0.75, Gray)),
+  -webkit-gradient(linear, 0 0, 100% 100%, color-stop(0.75, transparent), color-stop(0.75, Gray));
   background-position: 0 0, 15px 0, 15px -15px, 0 15px;
   -webkit-background-size: 30px 30px;
      -moz-background-size: 30px 30px;
