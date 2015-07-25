@@ -45,3 +45,10 @@ div.style_settings-preview-caption {
   border-color: /*variable:FOO_bordercolor*/IndianRed/*variable*/;
   font-size: /*variable:FOO_fontsize*/110%/*variable*/;
 }
+
+div.style-settings-image-preview img {
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
+  filter: alpha(opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
+  -moz-opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
+  opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
+}
