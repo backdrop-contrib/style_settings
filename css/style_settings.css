@@ -8,8 +8,14 @@ div.style-settings-image-preview {
   padding: 0 10px 10px 0; /* LTR */
 }
 
+/*Puts a preview template next to the preview itself.*/
+.style-settings-preview {
+  float: left;
+  margin: 0 15px 15px 0;
+}
+
 /* Create a checkerboard background to verify the image opacity level.*/
-.style-settings-image-preview div.style-settings-checkerboard {
+div.style-settings-checkerboard {
   float: left;
   max-height: 75px;
   border: solid LightGrey 1px;

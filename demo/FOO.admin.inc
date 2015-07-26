@@ -28,10 +28,18 @@ function FOO_admin_settings() {
       <li> A color picker.</li>
     </ul>", array('!style_settings_module' => $style_settings_module)),
   );
+  // The condition below only exists for when code is copy/pasted to elsewhere.
   if (module_exists('style_settings')) {
-    // When we have a list of CSS variables it is better to collapse it.
+    // Uncomment the line below to collapse a list of CSS variables.
 //    $form['css_variables']['#collapsed'] = TRUE;
 
+    // Make sure a medium sized default image exists.
+    $sample_image = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
+    $styled_file = image_style_path('medium', $sample_image);
+    if (!file_exists($styled_file)) {
+      image_style_create_derivative(image_style_load('medium'), $sample_image, $styled_file);
+    }
+    $sample_image = '/' . variable_get('file_public_path', conf_path() . '/files') . str_replace('public:/', '', $styled_file);
     // A preview area.
     $form['css_variables']['FOO_preview'] = array(
       '#type' => 'fieldset',
@@ -40,8 +48,35 @@ function FOO_admin_settings() {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
+    $markup = variable_get('FOO_preview_html', array(
+      'value' => '<div class="style-settings-preview-swatch"><div class="style-settings-preview-object"></div></div><div class="style-settings-preview-caption">This is a caption.</div>',
+      'format'=> 'full_html',
+    ));
+    // Reset to the default preview template if it is found empty.
+    $trimmed = trim($markup['value']);
+    $markup = empty($trimmed) ? variable_set('FOO_preview_html', array(
+      'value' => '<div class="style-settings-preview-swatch"><div class="style-settings-preview-object"></div></div><div class="style-settings-preview-caption">This is a caption.</div>',
+      'format'=> 'full_html',
+    )) : $markup;
+    // Use the current user's default format if the stored one isn't available.
+    $format_id = filter_format_load($markup['format']) ? $markup['format'] : filter_default_format();
     $form['css_variables']['FOO_preview']['FOO_preview_markup'] = array(
-      '#markup' => '<div class="style_settings-preview"><div class="style_settings-preview-swatch"><div class="style_settings-preview-object"></div></div><div class="style_settings-preview-caption">This is a caption.</div></div>',
+      '#markup' => '<div class="style-settings-preview">' . check_markup($markup['value'], $format_id, '', $cache = TRUE) . '</div>',
+    );
+    $form['css_variables']['FOO_preview']['FOO_preview_details'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Template'),
+      '#description' => t('Wrapped in <code>&lt;div class="style-settings-preview"> .. &lt;/div></code>.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    $form['css_variables']['FOO_preview']['FOO_preview_details']['FOO_preview_html'] = array(
+      '#type' => 'text_format',
+      '#title' => t(''),
+      '#description' => t('Changes are visible after form submit. Empty the text area to reset to default.'),
+      '#default_value' => $markup['value'],
+      '#format' => $format_id,
+      '#access' => 'use text format ' . $format_id,
     );
 
     // IMAGE URL field with an optional file UPLOAD. It goes together with a
@@ -50,7 +85,7 @@ function FOO_admin_settings() {
     // 'image' module as a dependency in the '.info' file or wrap it inside:
     //   if (module_exists('image')) { .. }
     // You could also renounce to the file upload and use a URL field only.
-    $sample = l(t('https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=300&q=75&w=400'), 'https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=300&q=75&w=400', array(
+    $sample = l(t('https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=165&q=75&w=220'), 'https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=165&q=75&w=220', array(
         'attributes' => array(
           'title' => t('photo-1414450397866-85f90db48714 (400×300) | Milo McDowell | Unsplash'),
           'target' => '_blank',
@@ -77,7 +112,7 @@ function FOO_admin_settings() {
     }
     // IMAGE URL example.
     $uploaded_url = variable_get('FOO_imgupload_url', '');
-    $default = empty($uploaded_url) ? variable_get('FOO_imgurl', '/' . drupal_get_path('module', 'image') . '/sample.png') : $uploaded_url;
+    $default = empty($uploaded_url) ? variable_get('FOO_imgurl', $sample_image) : $uploaded_url;
     $form['css_variables']['FOO_image']['FOO_imgurl'] = array(
       '#type' => 'style_settings_imgurl',
       // If you use this for a 'theme', replace 'module' below.
@@ -197,6 +232,21 @@ function FOO_admin_settings() {
  */
 function FOO_admin_settings_submit($form, &$form_state) {
   if (module_exists('style_settings')) {
+    // Make sure a medium sized sample default image exists.
+    $sample_image = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
+    $styled_file = image_style_path('medium', $sample_image);
+    if (!file_exists($styled_file)) {
+      image_style_create_derivative(image_style_load('medium'), $sample_image, $styled_file);
+    }
+    $sample_image = '/' . variable_get('file_public_path', conf_path() . '/files') . str_replace('public:/', '', $styled_file);
+
+    // Reset to the default preview template if it is found empty.
+    $trimmed = trim($form_state['values']['FOO_preview_html']['value']);
+    $form_state['values']['FOO_preview_html'] = empty($trimmed) ? variable_set('FOO_preview_html', array(
+      'value' => '<div class="style-settings-preview-swatch"><div class="style-settings-preview-object"></div></div><div class="style-settings-preview-caption">This is a caption.</div>',
+      'format'=> 'full_html',
+    )) : $form_state['values']['FOO_preview_html'];
+
     //IMAGE UPLOAD.
     if (!empty($form_state['values']['FOO_imgupload'])) {
       $image = file_load($form_state['values']['FOO_imgupload']);
@@ -214,7 +264,7 @@ function FOO_admin_settings_submit($form, &$form_state) {
     // hook_form_FORM_ID_alter(). In that case move it to the submit handler
     // after hook_settings() in the 'parent' form.
     if (trim($form_state['values']['FOO_imgurl']) == '') {
-      $form_state['values']['FOO_imgurl'] = '/' . drupal_get_path('module', 'image') . '/sample.png';
+      $form_state['values']['FOO_imgurl'] = $sample_image;
       drupal_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
     }
 
