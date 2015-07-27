@@ -31,5 +31,7 @@ function style_settings_demo_uninstall() {
   variable_del('FOO_caption_align');
   variable_del('FOO_borderwidth');
   variable_del('FOO_bordercolor');
+  variable_del('FOO_preview_html');
+  variable_del('FOO_preview_collapsed');
   _drupal_flush_css_js();
 }

@@ -10,8 +10,10 @@ div.style-settings-image-preview {
 
 /*Puts a preview template next to the preview itself.*/
 .style-settings-preview {
-  float: left;
-  margin: 0 15px 15px 0;
+  float: left; /* LTR */
+  margin: 0 12px 15px 0; /* LTR */
+  padding: 10px;
+  border: 1px solid #ccc;
 }
 
 /* Create a checkerboard background to verify the image opacity level.*/

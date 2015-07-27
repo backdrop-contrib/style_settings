@@ -5,9 +5,10 @@
  */
 
 /* Create a checkerboard background to verify the image opacity level.*/
-div.style-settings-preview-swatch {
+div.FOO-preview-swatch {
   position: relative;
   width: 220px;
+  padding: 20px 20px;
   border: solid LightGrey 1px;
   background-image: -moz-linear-gradient(45deg, Gray 25%, transparent 25%),
   -moz-linear-gradient(-45deg, Gray 25%, transparent 25%),
@@ -21,17 +22,16 @@ div.style-settings-preview-swatch {
   -webkit-background-size: 20px 20px;
      -moz-background-size: 20px 20px;
           background-size: 20px 20px;
-  padding: 20px 20px;
 }
 
-div.style-settings-preview-object {
+div.FOO-preview-object {
   height: 165px;
   opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
   background-image: /*variable:FOO_imgurl*/url(/modules/image/sample.png)/*variable*/;
   background-size: 220px 165px;
 }
 
-div.style-settings-preview-caption {
+div.FOO-preview-caption {
   margin-top: 5px;
   text-align: /*variable:FOO_caption_align*/center/*variable*/;
   border-width: /*variable:FOO_borderwidth*/5px/*variable*/;
@@ -40,9 +40,15 @@ div.style-settings-preview-caption {
   font-size: /*variable:FOO_fontsize*/110%/*variable*/;
 }
 
-div.style-settings-image-preview img {
+div.FOO-image-preview img {
+       opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
+
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
   filter: alpha(opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
   -moz-opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
-  opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
+}
+
+/* Make sure the preview template text area doesn't get too small.*/
+fieldset#edit-foo-preview-details {
+  min-width: 330px;
 }

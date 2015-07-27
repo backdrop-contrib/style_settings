@@ -8,6 +8,11 @@ div.style-settings-image-preview {
   padding: 0 0 10px 10px;
 }
 
+.style-settings-preview {
+  float: right;
+  margin: 0 0 15px 12px;
+}
+
 fieldset.container-inline .fieldset-wrapper .form-item.form-type-managed-file {
   float: left;
 }

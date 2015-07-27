@@ -46,22 +46,24 @@ function FOO_admin_settings() {
       '#title' => t('Preview'),
       '#description' => '<p>' . t('Note: Save the form to see your changes.') . '</p>',
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => variable_get('FOO_preview_collapsed', TRUE),
     );
+    // Form submit resulted in an uncollapsed preview. Set it back.
+    variable_set('FOO_preview_collapsed', TRUE);
     $markup = variable_get('FOO_preview_html', array(
-      'value' => '<div class="style-settings-preview-swatch"><div class="style-settings-preview-object"></div></div><div class="style-settings-preview-caption">This is a caption.</div>',
+      'value' => '<div class="FOO-preview-swatch"><div class="FOO-preview-object"></div></div><div class="FOO-preview-caption">This is a caption.</div>',
       'format'=> 'full_html',
     ));
     // Reset to the default preview template if it is found empty.
     $trimmed = trim($markup['value']);
     $markup = empty($trimmed) ? variable_set('FOO_preview_html', array(
-      'value' => '<div class="style-settings-preview-swatch"><div class="style-settings-preview-object"></div></div><div class="style-settings-preview-caption">This is a caption.</div>',
+      'value' => '<div class="FOO-preview-swatch"><div class="FOO-preview-object"></div></div><div class="FOO-preview-caption">This is a caption.</div>',
       'format'=> 'full_html',
     )) : $markup;
     // Use the current user's default format if the stored one isn't available.
     $format_id = filter_format_load($markup['format']) ? $markup['format'] : filter_default_format();
     $form['css_variables']['FOO_preview']['FOO_preview_markup'] = array(
-      '#markup' => '<div class="style-settings-preview">' . check_markup($markup['value'], $format_id, '', $cache = TRUE) . '</div>',
+      '#markup' => '<div class="style-settings-preview">' . check_markup($markup['value'], $format_id, '', $cache = FALSE) . '</div>',
     );
     $form['css_variables']['FOO_preview']['FOO_preview_details'] = array(
       '#type' => 'fieldset',
@@ -232,6 +234,8 @@ function FOO_admin_settings() {
  */
 function FOO_admin_settings_submit($form, &$form_state) {
   if (module_exists('style_settings')) {
+    // Uncollapse the preview. Likely we want to see the changes we just made.
+    variable_set('FOO_preview_collapsed', FALSE);
     // Make sure a medium sized sample default image exists.
     $sample_image = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
     $styled_file = image_style_path('medium', $sample_image);
@@ -243,7 +247,7 @@ function FOO_admin_settings_submit($form, &$form_state) {
     // Reset to the default preview template if it is found empty.
     $trimmed = trim($form_state['values']['FOO_preview_html']['value']);
     $form_state['values']['FOO_preview_html'] = empty($trimmed) ? variable_set('FOO_preview_html', array(
-      'value' => '<div class="style-settings-preview-swatch"><div class="style-settings-preview-object"></div></div><div class="style-settings-preview-caption">This is a caption.</div>',
+      'value' => '<div class="FOO-preview-swatch"><div class="FOO-preview-object"></div></div><div class="FOO-preview-caption">This is a caption.</div>',
       'format'=> 'full_html',
     )) : $form_state['values']['FOO_preview_html'];
 
