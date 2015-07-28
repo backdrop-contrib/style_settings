@@ -26,9 +26,13 @@ div.FOO-preview-swatch {
 
 div.FOO-preview-object {
   height: 165px;
-  opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
+       opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
   background-image: /*variable:FOO_imgurl*/url(/modules/image/sample.png)/*variable*/;
   background-size: 220px 165px;
+
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
+  filter: alpha(opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
+  -moz-opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
 }
 
 div.FOO-preview-caption {
@@ -40,7 +44,7 @@ div.FOO-preview-caption {
   font-size: /*variable:FOO_fontsize*/110%/*variable*/;
 }
 
-div.FOO-image-preview img {
+div.style-settings-image-preview img {
        opacity: /*variable:FOO_img_opacity*/0.9/*variable*/;
 
   -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=/*variable:FOO_img_opacity*/0.9/*variable*/);
