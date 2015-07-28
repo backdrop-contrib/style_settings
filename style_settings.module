@@ -308,7 +308,7 @@ function style_settings_color_validate($element, &$form_state) {
  * Validates hex color. Checks for a Color Name first to prevent error if a name
  * was entered (optional).
  *
- * $color: the color hex value stirng to Validates $named: (optional), set to
+ * $color: The color hex value stirng to Validates $named: (optional), set to
  * 1 or TRUE to first test if a Named color was passed instead of a Hex value.
  */
 function style_settings_validate_html_color($color, $named = TRUE) {

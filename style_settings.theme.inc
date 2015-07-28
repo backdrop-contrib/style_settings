@@ -95,7 +95,13 @@ function theme_style_settings_imgurl($variables) {
   // A unique identifier to target the preview with ajax/JS to refresh.
   $id = $element['#parents'][0];
   $element['#attributes']['type'] = 'text';
-  element_set_attributes($element, array('id', 'name', 'value', 'size', 'maxlength'));
+  element_set_attributes($element, array(
+    'id',
+    'name',
+    'value',
+    'size',
+    'maxlength',
+  ));
   _form_set_class($element, array('form-text'));
   $output = '';
   $value = trim($element['#attributes']['value']);

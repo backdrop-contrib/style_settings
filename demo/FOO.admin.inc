@@ -32,7 +32,7 @@ function FOO_admin_settings() {
   if (module_exists('style_settings')) {
     // Uncomment the line below to collapse a list of CSS variables.
 //    $form['css_variables']['#collapsed'] = TRUE;
-
+    //
     // Make sure a medium sized default image exists.
     $sample_image = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
     $styled_file = image_style_path('medium', $sample_image);
@@ -44,7 +44,7 @@ function FOO_admin_settings() {
     $form['css_variables']['FOO_preview'] = array(
       '#type' => 'fieldset',
       '#title' => t('Preview'),
-      '#description' => '<p>' . t('Note: Save the form to see your changes.') . '</p>',
+      '#description' => t('After modifying the settings below, submit the form to verify the result of your changes here.'),
       '#collapsible' => TRUE,
       '#collapsed' => variable_get('FOO_preview_collapsed', TRUE),
     );
@@ -52,13 +52,13 @@ function FOO_admin_settings() {
     variable_set('FOO_preview_collapsed', TRUE);
     $markup = variable_get('FOO_preview_html', array(
       'value' => '<div class="FOO-preview-swatch"><div class="FOO-preview-object"></div></div><div class="FOO-preview-caption">This is a caption.</div>',
-      'format'=> 'full_html',
+      'format' => 'full_html',
     ));
     // Reset to the default preview template if it is found empty.
     $trimmed = trim($markup['value']);
     $markup = empty($trimmed) ? variable_set('FOO_preview_html', array(
       'value' => '<div class="FOO-preview-swatch"><div class="FOO-preview-object"></div></div><div class="FOO-preview-caption">This is a caption.</div>',
-      'format'=> 'full_html',
+      'format' => 'full_html',
     )) : $markup;
     // Use the current user's default format if the stored one isn't available.
     $format_id = filter_format_load($markup['format']) ? $markup['format'] : filter_default_format();
@@ -74,7 +74,6 @@ function FOO_admin_settings() {
     );
     $form['css_variables']['FOO_preview']['FOO_preview_details']['FOO_preview_html'] = array(
       '#type' => 'text_format',
-      '#title' => t(''),
       '#description' => t('Changes are visible after form submit. Empty the text area to reset to default.'),
       '#default_value' => $markup['value'],
       '#format' => $format_id,
@@ -85,7 +84,7 @@ function FOO_admin_settings() {
     // submit handler inside the 'function FOO_admin_settings_submit()'.
     // If you use this code in your project you should either declare the core
     // 'image' module as a dependency in the '.info' file or wrap it inside:
-    //   if (module_exists('image')) { .. }
+    // if (module_exists('image')) { .. }
     // You could also renounce to the file upload and use a URL field only.
     $sample = l(t('https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=165&q=75&w=220'), 'https://unsplash.imgix.net/photo-1414450397866-85f90db48714?fit=crop&fm=jpg&h=165&q=75&w=220', array(
         'attributes' => array(
@@ -108,7 +107,7 @@ function FOO_admin_settings() {
       '#size' => 40,
       '#upload_location' => 'public://FOO/',
       '#theme' => 'image_widget',
-    ); 
+    );
     if (!variable_get('FOO_imgupload', '')) {
       variable_set('FOO_imgupload_url', '');
     }
@@ -183,7 +182,7 @@ function FOO_admin_settings() {
     // The Style Settings module offers several form API elements to help
     // developers build the settings page. Cool UI widgets and built-in
     // validation of user input especially designed for CSS attributes.
-
+    //
     // NUMBER example in this case with an appended measurement unit (optional).
     // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
     $form['css_variables']['FOO_borderwidth'] = array(
@@ -248,10 +247,10 @@ function FOO_admin_settings_submit($form, &$form_state) {
     $trimmed = trim($form_state['values']['FOO_preview_html']['value']);
     $form_state['values']['FOO_preview_html'] = empty($trimmed) ? variable_set('FOO_preview_html', array(
       'value' => '<div class="FOO-preview-swatch"><div class="FOO-preview-object"></div></div><div class="FOO-preview-caption">This is a caption.</div>',
-      'format'=> 'full_html',
+      'format' => 'full_html',
     )) : $form_state['values']['FOO_preview_html'];
 
-    //IMAGE UPLOAD.
+    // IMAGE UPLOAD.
     if (!empty($form_state['values']['FOO_imgupload'])) {
       $image = file_load($form_state['values']['FOO_imgupload']);
       $url = '/' . variable_get('file_public_path', conf_path() . '/files') . '/' . file_uri_target($image->uri);
