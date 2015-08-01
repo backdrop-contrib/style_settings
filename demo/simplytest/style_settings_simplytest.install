@@ -18,6 +18,7 @@ function style_settings_simplytest_install() {
     'link_title' => $t('Example Style Settings'),
     'link_path' => 'admin/config/system/FOO',
     'menu_name' => 'main-menu',
+    'weight' => 1,
   );
   menu_link_save($item);
 

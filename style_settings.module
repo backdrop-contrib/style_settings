@@ -40,7 +40,7 @@ function style_settings_css_alter(&$css) {
       return in_array('style_settings', $ar['dependencies']);
     }
   }));
-  // Process each theme that has a soft-dependency.
+  // Process each theme that has a (soft-)dependency.
   foreach ($themes as $theme) {
     if (style_settings_theme_exists($theme)) {
       $path_to_theme = drupal_get_path('theme', $theme);
@@ -68,7 +68,7 @@ function style_settings_css_alter(&$css) {
       return in_array('style_settings', $ar['dependencies']);
     }
   }));
-  // Process each module that has a soft-dependency.
+  // Process each module that has a (soft-)dependency.
   foreach ($modules as $module) {
     if (module_exists($module)) {
       $path_to_module = drupal_get_path('module', $module);

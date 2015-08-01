@@ -2,6 +2,9 @@
 /**
  * @file
  * The admin settings for the FOO module.
+ * The Style Settings module offers several form API elements to help
+ * developers build the settings page. Cool UI widgets and built-in validation
+ * of user input especially designed for CSS attributes.
  */
 
 /**
@@ -21,17 +24,18 @@ function FOO_admin_settings() {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#description' => t("This example settings form shows the form API elements offered by the !style_settings_module. They consist of:<ul>
-      <li> An image URL with optional file upload.</li>
-      <li> A slider (HTML5 range).</li>
-      <li> A number.</li>
-      <li> A combined value with unit example.</li>
-      <li> A color picker.</li>
-    </ul>", array('!style_settings_module' => $style_settings_module)),
+      <li>An image URL with optional file upload.</li>
+      <li>A slider (HTML5 range).</li>
+      <li>A number.</li>
+      <li>A combined value with unit example.</li>
+      <li>A color picker.</li>
+    </ul>
+    All code is included in the demo of the module, ready to be copy/pasted to your own project and customized.", array('!style_settings_module' => $style_settings_module)),
   );
   // The condition below only exists for when code is copy/pasted to elsewhere.
   if (module_exists('style_settings')) {
-    // Uncomment the line below to collapse a list of CSS variables.
-//    $form['css_variables']['#collapsed'] = TRUE;
+    // Uncomment line below to collapse the fieldset but open after form submit.
+//    $form['css_variables']['#collapsed'] = variable_get('FOO_preview_collapsed', TRUE);
     //
     // Make sure a medium sized default image exists.
     $sample_image = variable_get('image_style_preview_image', drupal_get_path('module', 'image') . '/sample.png');
@@ -179,10 +183,6 @@ function FOO_admin_settings() {
       '#size' => 12,
     );
 
-    // The Style Settings module offers several form API elements to help
-    // developers build the settings page. Cool UI widgets and built-in
-    // validation of user input especially designed for CSS attributes.
-    //
     // NUMBER example in this case with an appended measurement unit (optional).
     // E.g. user input: '2', field_suffix: 'px' => stored variable: '2px'.
     $form['css_variables']['FOO_borderwidth'] = array(
@@ -277,5 +277,7 @@ function FOO_admin_settings_submit($form, &$form_state) {
 
     // Make sure changes are visible right after saving the settings.
     _drupal_flush_css_js();
+    // If changes don't appear, try to uncomment also the line below.
+//    cache_clear_all('style_settings_', 'cache', TRUE);
   }
 }

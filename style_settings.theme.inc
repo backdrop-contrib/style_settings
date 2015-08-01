@@ -31,8 +31,8 @@ function theme_style_settings_number($variables) {
     'input_help',
   ));
   _form_set_class($element, array('form-text'));
-  $min = isset($element['#min']) ? t('Min') . '=' . $element['#min'] : '';
-  $max = isset($element['#max']) ? '&nbsp;&nbsp;' . t('Max') . '=' . $element['#max'] : '';
+  $min = isset($element['#min']) ? t('Minimum') . '=' . $element['#min'] : '';
+  $max = isset($element['#max']) ? '&nbsp;&nbsp;' . t('Maximum') . '=' . $element['#max'] : '';
   $step = isset($element['#step']) ? '&nbsp;&nbsp;' . t('Step') . '=' . $element['#step'] : '';
   $input_help = $element['#input_help'] ? '<div class="description clearfix">' . $min . $max . $step . '</div>' : '';
   $output = $input_help . '<input' . drupal_attributes($element['#attributes']) . ' />';
