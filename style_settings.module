@@ -1,22 +1,33 @@
 <?php
 /**
  * @file
- * Use any (custom) theme setting or Drupal variable in any of your theme or
- * module style sheets (see https://drupal.org/project/style_settings).
+ * Use any (custom) theme setting or backdrop variable in any of your theme or
+ * module style sheets (see https://backdrop.org/project/style_settings).
  */
 
 define('STYLE_SETTINGS_STYLESHEET_DIR', 'public://style_settings/');
 
 /**
- * Implements hook_page_build().
+ * Implements hook_config_info().
  */
-function style_settings_page_build(&$page) {
-  drupal_add_css(drupal_get_path('module', 'style_settings') . '/css/style_settings.css', array(
+function style_settings_config_info() {
+  $prefixes['style_settings.settings'] = array(
+    'label' => t('Style settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
+ * Implements hook_init().
+ */
+function style_settings_init() {
+  backdrop_add_css(backdrop_get_path('module', 'style_settings') . '/css/style_settings.css', array(
     'group' => CSS_DEFAULT,
     'every_page' => TRUE,
   ));
   // Make sure the site's custom CSS is processed last.
-  drupal_add_css(drupal_get_path('module', 'style_settings') . '/css/custom.css', array(
+  backdrop_add_css(backdrop_get_path('module', 'style_settings') . '/css/custom.css', array(
     'group' => CSS_THEME,
     'every_page' => TRUE,
     'weight' => 99,
@@ -27,9 +38,9 @@ function style_settings_page_build(&$page) {
  * Implements hook_css_alter().
  */
 function style_settings_css_alter(&$css) {
-  // When _drupal_flush_css_js() changes the 'css_js_query_string', we will use
+  // When _backdrop_flush_css_js() changes the 'css_js_query_string', we will use
   // this as a directive to bypass the caching of the rewritten paths.
-  $css_js_query_string_changed = variable_get('css_js_query_string', '0') != variable_get('style_settings_last_css_js_query_string', '0');
+  $css_js_query_string_changed = state_get('css_js_query_string', '0') != config_get('style_settings.settings', 'style_settings_last_css_js_query_string', '0');
   // Get all themes that use Style (CSS) Settings.
   // They got 'soft_dependencies[] = style_settings' in their '.info' file.
   $themes = array_keys(array_filter(system_get_info('theme'), function($ar) {
@@ -43,11 +54,11 @@ function style_settings_css_alter(&$css) {
   // Process each theme that has a (soft-)dependency.
   foreach ($themes as $theme) {
     if (style_settings_theme_exists($theme)) {
-      $path_to_theme = drupal_get_path('theme', $theme);
+      $path_to_theme = backdrop_get_path('theme', $theme);
       // Process each style sheet of a theme.
       foreach ($css as $path => $stylesheet) {
         if (file_exists($path) && strpos($path, $path_to_theme) !== FALSE) {
-          if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed)) {
+          if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed, $theme)) {
             $relative_uri = file_create_relative_uri($new_path);
             $css[$relative_uri] = $css[$path];
             $css[$relative_uri]['data'] = $relative_uri;
@@ -68,14 +79,16 @@ function style_settings_css_alter(&$css) {
       return in_array('style_settings', $ar['dependencies']);
     }
   }));
+  // Process submodules first.
+  $modules = array_reverse($modules);
   // Process each module that has a (soft-)dependency.
   foreach ($modules as $module) {
     if (module_exists($module)) {
-      $path_to_module = drupal_get_path('module', $module);
+      $path_to_module = backdrop_get_path('module', $module);
       // Process each style sheet of a module.
       foreach ($css as $path => $stylesheet) {
         if (file_exists($path) && strpos($path, $path_to_module) !== FALSE) {
-          if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed)) {
+          if ($new_path = style_settings_rewrite($path, $css_js_query_string_changed, $module)) {
             $relative_uri = file_create_relative_uri($new_path);
             $css[$relative_uri] = $css[$path];
             $css[$relative_uri]['data'] = $relative_uri;
@@ -86,16 +99,16 @@ function style_settings_css_alter(&$css) {
     }
   }
   if ($css_js_query_string_changed) {
-    variable_set('style_settings_last_css_js_query_string', variable_get('css_js_query_string', '0'));
+    config_set('style_settings.settings', 'style_settings_last_css_js_query_string', state_get('css_js_query_string', '0'));
   }
 }
 
 /**
  * Rewrite a style sheet and return the path to the rewritten one.
  */
-function style_settings_rewrite($path, $reset = FALSE) {
+function style_settings_rewrite($path, $reset = FALSE, $project) {
   // Get the active theme and all available persistent variables ($conf).
-  global $theme_key, $conf;
+  global $conf;
   // Caching hashed 'new paths' as it is expensive to calculate these values.
   $cid = 'style_settings_' . $path;
   $new_path_cached = cache_get($cid);
@@ -105,11 +118,13 @@ function style_settings_rewrite($path, $reset = FALSE) {
   // Detect remote files where 'filectime()' returns FALSE.
   $remote = empty($change);
   // Exclude variables that change on each page load.
-  unset($conf['drupal_css_cache_files']);
-  unset($conf['drupal_js_cache_files']);
+  unset($conf['backdrop_css_cache_files']);
+  unset($conf['backdrop_js_cache_files']);
   if (!$new_path || $reset) {
-    // Get all settings of the current active theme.
-    $settings = variable_get('theme_' . $theme_key . '_settings', array());
+    // Get all settings of the current theme or module.
+    $json_string = config_get_config_directory('active') . '/' . $project . '.settings.json';
+    $jsondata = file_exists($json_string) ? file_get_contents($json_string) : NULL;
+    $settings = json_decode($jsondata, true);
     // Generate a unique key based on theme settings, variables and file date.
     $checksum  = md5(serialize($settings) . serialize($conf) . $change);
     // Generate the filename for the customized CSS file.
@@ -118,17 +133,63 @@ function style_settings_rewrite($path, $reset = FALSE) {
   }
   // Generate the customized CSS file itself if it doesn't exist yet.
   if ($remote || !file_exists($new_path)) {
-    $realpath = drupal_realpath($new_path);
+    $realpath = backdrop_realpath($new_path);
     $dirname = dirname($realpath);
     file_prepare_directory($dirname, FILE_CREATE_DIRECTORY);
     $old_data = file_get_contents(file_create_url($path));
 
     // Prefix all paths, ignoring absolute paths.
-    _drupal_build_css_path(NULL, base_path() . dirname($path) . '/');
-    $new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_drupal_build_css_path', $old_data);
+    _backdrop_build_css_path(NULL, base_path() . dirname($path) . '/');
+    $new_data = preg_replace_callback('/url\([\'"]?(?![a-z]+:|\/+)([^\'")]+)[\'"]?\)/i', '_backdrop_build_css_path', $old_data);
 
-    // Replace all custom css.
-    $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', 'style_settings_replace', $new_data, $limit = -1, $count);
+    // Replace all custom css. We make use of an anonymous function to be able
+    // to pass the variable '$project'.
+    // See http://php.net/manual/en/functions.anonymous.php.
+    $new_data = preg_replace_callback('/\/\*\s*(setting|variable)\s*:\s*([a-z0-9_]+)\s*\*\/(.*)\/\*\s*.*\s*\*\//iU', function ($matches) use($project) {
+      global $theme_key;
+
+      $type      = $matches[1];
+      $name      = $matches[2];
+      $original  = $matches[3];
+
+      // Cache settings for next calls.
+      if ($type == 'setting') {
+        $setting = theme_get_setting($name);
+      }
+      // Variable.
+      if ($type == 'variable') {
+        $replacement = config_get($project . '.settings', $name);
+        if (empty($replacement)) {
+          $replacement = variable_get($name, NULL);
+        }
+
+        if (!$replacement || !(is_string($replacement) || is_numeric($replacement))) {
+          return $original;
+        }
+      }
+      // Theme setting.
+      else {
+        $replacement = $setting;
+
+        if (!$replacement) {
+          return $original;
+        }
+      }
+
+      // Since a comment cannot be in url(), we have to add this around the
+      // replacement (if the user doesn't).
+      if (preg_match('/url\(.*\)/i', $original) && !preg_match('/url\(.*\)/i', $replacement)) {
+
+        // Prefix path, ignoring absolute paths.
+        if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
+          $replacement = base_path() . $replacement;
+        }
+
+        $replacement = 'url(\'' . $replacement . '\')';
+      }
+
+      return $replacement;
+    }, $new_data, $limit = -1, $count);
 
     // Only rewrite a CSS file if any replacements were made.
     if ($count > 0) {
@@ -138,17 +199,17 @@ function style_settings_rewrite($path, $reset = FALSE) {
           'title' => t('Home » Administration » Reports'),
         ),
       ));
-      drupal_set_message(t('Style Settings CSS files have been rewritten successfully. Check !watchdog for details.', array('!watchdog' => $watchdog)), 'status', FALSE);
+      backdrop_set_message(t('Style Settings CSS files have been rewritten successfully. Check !watchdog for details.', array('!watchdog' => $watchdog)), 'status', FALSE);
       watchdog('style_settings', 'Rewritten successfully %path to %new_path', array('%path' => $path, '%new_path' => $new_path));
     }
   }
 
   // Cleanup leftover files.
-  $generated_files = glob(drupal_realpath(STYLE_SETTINGS_STYLESHEET_DIR) . '/*');
+  $generated_files = glob(backdrop_realpath(STYLE_SETTINGS_STYLESHEET_DIR) . '/*');
   $fileinfo = pathinfo($path);
 
   foreach ($generated_files as $generated_file) {
-    if (strpos($generated_file, $fileinfo['basename']) !== FALSE && $generated_file != drupal_realpath($new_path)) {
+    if (strpos($generated_file, $fileinfo['basename']) !== FALSE && $generated_file != backdrop_realpath($new_path)) {
       file_unmanaged_delete($generated_file);
     }
   }
@@ -163,53 +224,6 @@ function style_settings_rewrite($path, $reset = FALSE) {
 }
 
 /**
- * Callback to replace custom css tags.
- */
-function style_settings_replace($matches) {
-  global $theme_key;
-
-  $type      = $matches[1];
-  $name      = $matches[2];
-  $original  = $matches[3];
-
-  // Cache settings for next calls.
-  if ($type == 'setting') {
-    $setting = theme_get_setting($name);
-  }
-
-  // Variable.
-  if ($type == 'variable') {
-    $replacement = variable_get($name, NULL);
-
-    if (!$replacement || !(is_string($replacement) || is_numeric($replacement))) {
-      return $original;
-    }
-  }
-  // Theme setting.
-  else {
-    $replacement = $setting;
-
-    if (!$replacement) {
-      return $original;
-    }
-  }
-
-  // Since a comment cannot be in url(), we have to add this around the
-  // replacement (if the user doesn't).
-  if (preg_match('/url\(.*\)/i', $original) && !preg_match('/url\(.*\)/i', $replacement)) {
-
-    // Prefix path, ignoring absolute paths.
-    if (!preg_match('/^([a-z]+:|\/+)/', $replacement)) {
-      $replacement = base_path() . $replacement;
-    }
-
-    $replacement = 'url(\'' . $replacement . '\')';
-  }
-
-  return $replacement;
-}
-
-/**
  * Callback for creating a relative uri from a streamwrapper.
  */
 function file_create_relative_uri($path) {
@@ -221,7 +235,7 @@ function file_create_relative_uri($path) {
 }
 
 /**
- * Like Drupal's core 'module_exists()' but for enabled themes.
+ * Like backdrop's core 'module_exists()' but for enabled themes.
  */
 function style_settings_theme_exists($theme_name) {
   $themes = list_themes();
@@ -254,7 +268,7 @@ function style_settings_element_info() {
     '#attributes' => array('class' => array('style_settings-colorpicker')),
     '#attached' => array(
       'library' => array(array('system', 'farbtastic')),
-      'js' => array(drupal_get_path('module', 'style_settings') . '/js/style_settings-farbtastic.js'),
+      'js' => array(backdrop_get_path('module', 'style_settings') . '/js/style_settings-farbtastic.js'),
     ),
   );
   $types['style_settings_number'] = array(
@@ -286,7 +300,7 @@ function style_settings_element_info() {
     '#theme_wrappers' => array('form_element'),
     '#element_validate' => array('style_settings_imgurl_validate'),
     '#suffix' => '</div>',
-    '#size' => 80,
+    '#size' => 60,
     '#maxlength' => 160,
   );
   return $types;

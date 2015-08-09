@@ -50,3 +50,7 @@ fieldset.container-inline .fieldset-wrapper .form-item.form-type-managed-file {
 fieldset.container-inline .fieldset-wrapper .messages.status {
   display: none;
 }
+
+.form-item.form-type-style-settings-slider span {
+margin-left: 10px;
+}

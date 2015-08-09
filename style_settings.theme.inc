@@ -35,7 +35,7 @@ function theme_style_settings_number($variables) {
   $max = isset($element['#max']) ? '&nbsp;&nbsp;' . t('Maximum') . '=' . $element['#max'] : '';
   $step = isset($element['#step']) ? '&nbsp;&nbsp;' . t('Step') . '=' . $element['#step'] : '';
   $input_help = $element['#input_help'] ? '<div class="description clearfix">' . $min . $max . $step . '</div>' : '';
-  $output = $input_help . '<input' . drupal_attributes($element['#attributes']) . ' />';
+  $output = $input_help . '<input' . backdrop_attributes($element['#attributes']) . ' />';
 
   return $output;
 }
@@ -66,7 +66,7 @@ function theme_style_settings_slider($variables) {
     'max',
   ));
   _form_set_class($element, array('form-text', 'form-range'));
-  $output = '<input' . drupal_attributes($element['#attributes']) . ' />';
+  $output = '<input' . backdrop_attributes($element['#attributes']) . ' />';
   $output .= '<span id="' . $id . '">';
   $output .= $element['#attributes']['value'];
   $output .= '</span>';
@@ -113,7 +113,7 @@ function theme_style_settings_imgurl($variables) {
     $output .= '</div>';
   }
   $output .= '<div class="style-settings-image-data">';
-  $output .= '<input' . drupal_attributes($element['#attributes']) . ' />';
+  $output .= '<input' . backdrop_attributes($element['#attributes']) . ' />';
 
   return $output;
 }

@@ -1,6 +1,5 @@
 name = Style Settings
-description = Use any custom theme setting or Drupal variable in any of your theme or module CSS style sheets.
-core = 7.x
-
+description = Use any custom theme setting or backdrop variable in any of your theme or module CSS style sheets.
+type = module
+backdrop = 1.x
 soft_dependencies[] = style_settings
-simplytest_dependencies[] = style_settings_simplytest

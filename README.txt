@@ -1,11 +1,11 @@
 ## Style (CSS) Settings module ##
 
 The content of this file is based on the online documentation that can be found
-at https://www.drupal.org/node/2527412. It is recommended to read it there as it
+at https://www.backdrop.org/node/2527412. It is recommended to read it there as it
 is improved, contains links and images, and code examples are syntax
 highlighted.
 
-https://drupal.org/project/style_settings is intended for theme and module
+https://backdrop.org/project/style_settings is intended for theme and module
 maintainers but can be used for customisations by anyone with basic coding
 skills (for example to provide a patch for projects that could use some CSS to
 be configurable). It might simply be needed because a theme or module declares
@@ -13,7 +13,7 @@ it as a (soft-)dependency.
 
 Allows any module or theme to have their CSS attributes configurable from the UI
 just by wrapping default CSS values (plus unit) in a code comment. These are
-then substituted in a separate rewritten CSS file by Drupal variables or theme
+then substituted in a separate rewritten CSS file by backdrop variables or theme
 settings. The CSS is functional even if this module is not installed.
 
 All is cached so the performance impact is neglectable. The rewritten CSS files
@@ -106,7 +106,7 @@ A lot of CSS attributes contain a color value. Although a simple text field
 could hold a color hex value, having a colorpicker is more convenient.
 
 '#type' =>  'style_settings_colorpicker',
-- Uses Drupal core's Farbtastic ColorPicker plugin.
+- Uses backdrop core's Farbtastic ColorPicker plugin.
 - Makes the current choosen color visible in the settings field itself.
 - Only accepts a valid color, a hex value but also a color name.
 - Does not depend on any contrib or the Color module.
@@ -134,13 +134,13 @@ The defaults are preset for the CSS attribute 'opacity' but can be overriden.
 #### More info ####
 
 For more information on custom theme settings, read:
-  https://www.drupal.org/node/177868
-A simple example of theme settings is Drupal core's
+  https://www.backdrop.org/node/177868
+A simple example of theme settings is backdrop core's
 '/themes/garland/theme-settings.php' and '/themes/garland/garland.info'.
 
 For more information on custom module settings, read:
-  https://www.drupal.org/node/1111260
-A simple but complete example of module settings is Drupal core's
+  https://www.backdrop.org/node/1111260
+A simple but complete example of module settings is backdrop core's
 '/modules/update/update.settings.inc'.
 
 ##### A selectable measurement unit (e.g. px, em, %) #####
@@ -164,7 +164,7 @@ Put the following comment at the top of CSS files that contain style variables:
 
 /**
  * The CSS values that are wrapped in '/*variable' comments are intended for use
- * by https://www.drupal.org/project/style_settings. Enable that module to
+ * by https://www.backdrop.org/project/style_settings. Enable that module to
  * have those CSS variables exposed in the settings UI.
  */
 
@@ -254,7 +254,7 @@ function FOO_admin_settings() {
       '#type' => 'style_settings_imgurl',
       '#title' => t('Background image'),
       // If you use this for a 'theme', replace 'module' below.
-      '#default_value' => variable_get('FOO_bgimage', '/' . drupal_get_path('module', 'image') . '/sample.png'),
+      '#default_value' => variable_get('FOO_bgimage', '/' . backdrop_get_path('module', 'image') . '/sample.png'),
       // In the submit handler below we reset an empty field to the default URL.
       // This way the user isn't required to know the URL of the default image.
       '#description' => t('An absolute (external) or relative (local) image URL. A relative URL must be given from the base URL (<em>/sites/..</em>). Leave empty to reset to the default image.'),
@@ -293,9 +293,9 @@ function FOO_admin_settings() {
   //
   // If the Style Settings module is not enabled, provide some instructions.
   else {
-    $style_settings_module = l(t('Style (CSS) Settings module'), 'https://drupal.org/project/style_settings', array(
+    $style_settings_module = l(t('Style (CSS) Settings module'), 'https://backdrop.org/project/style_settings', array(
         'attributes' => array(
-          'title' => t('Style (CSS) Settings | Drupal.org'),
+          'title' => t('Style (CSS) Settings | backdrop.org'),
           'target' => '_blank',
         ),
     ));
@@ -320,8 +320,8 @@ function FOO_admin_settings_submit($form, &$form_state) {
     // IMAGE URL: Reset to default if empty. Does not work after a hook_form_FORM_ID_alter().
     // In that case move it to the submit handler after hook_settings() in the 'parent' form.
     if (trim($form_state['values']['FOO_bgimage']) == '') {
-      $form_state['values']['FOO_bgimage'] = '/' . drupal_get_path('module', 'image') . '/sample.png';
-      drupal_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
+      $form_state['values']['FOO_bgimage'] = '/' . backdrop_get_path('module', 'image') . '/sample.png';
+      backdrop_set_message(t('The image URL has been reset to the default.'), 'warning', FALSE);
     }
     //
     // SELECTABLE MEASUREMENT UNIT: concatenate the value and unit in a new
@@ -329,15 +329,16 @@ function FOO_admin_settings_submit($form, &$form_state) {
     variable_set('FOO_fontsize', $form_state['values']['FOO_fontsize_value'] . $form_state['values']['FOO_fontsize_unit']);
     //
     // Make sure changes are visible right after saving the settings.
-    _drupal_flush_css_js();
+    _backdrop_flush_css_js();
    }
 }
 
 // END OF CODE
+?>
 
 Note in the form submit handler:
 
-    _drupal_flush_css_js();
+    _backdrop_flush_css_js();
 
 This way changes are visible right away after saving the form. Otherwise it is
 necessary to clear the cache after changing CSS variables at:

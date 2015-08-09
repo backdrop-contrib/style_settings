@@ -1,6 +1,6 @@
 name = Style Settings demo
 description = A working example of a settings page for CSS variables.
-core = 7.x
-
+type = module
+backdrop = 1.x
 dependencies[] = style_settings
 dependencies[] = image

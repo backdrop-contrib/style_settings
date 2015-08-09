@@ -1,0 +1,19 @@
+{
+  "_config_name": "style_settings_demo.settings",
+  "FOO_preview_collapsed": "TRUE",
+  "image_style_preview_image": "core/modules/image/images/sample.png",
+  "FOO_imgupload": "",
+  "FOO_imgupload_url": "",
+  "FOO_imgurl": "/files/styles/medium/public/core/modules/image/images/sample.png",
+  "FOO_img_opacity": "0.9",
+  "FOO_fontsize_value": "110",
+  "FOO_fontsize_unit": "%",
+  "FOO_caption_align": "center",
+  "FOO_borderwidth": "5px",
+  "FOO_bordercolor": "IndianRed",
+  "FOO_fontsize": "110%",
+  "FOO_preview_html": {
+    "value": "<div class=\"FOO-preview-swatch\"><div class=\"FOO-preview-object\"></div></div><div class=\"FOO-preview-caption\">This is a caption.</div>",
+    "format": "full_html"
+  }
+}

@@ -12,26 +12,48 @@ function style_settings_demo_install() {
   $text = $t('Go and checkout the !config_link.', array(
     '!config_link' => l($t('Style Settings demo page'), 'admin/config/system/FOO'),
   ));
-  drupal_set_message($text);
-  _drupal_flush_css_js();
+  backdrop_set_message($text);
+  _backdrop_flush_css_js();
 }
 
 /**
  * Implements hook_uninstall().
  */
 function style_settings_demo_uninstall() {
-  // Delete all variables set in variable table.
-  variable_del('FOO_imgupload');
-  variable_del('FOO_imgupload_url');
-  variable_del('FOO_imgurl');
-  variable_del('FOO_img_opacity');
-  variable_del('FOO_fontsize_value');
-  variable_del('FOO_fontsize_unit');
-  variable_del('FOO_fontsize');
-  variable_del('FOO_caption_align');
-  variable_del('FOO_borderwidth');
-  variable_del('FOO_bordercolor');
-  variable_del('FOO_preview_html');
-  variable_del('FOO_preview_collapsed');
-  _drupal_flush_css_js();
+  _backdrop_flush_css_js();
+}
+
+/**
+ * Move Style Settings demo settings from variables to config.
+ */
+function style_settings_demo_update_1000() {
+  // Migrate variables to config.
+  $config = config('style_settings.settings');
+  $config->set('FOO_imgupload', update_variable_get('FOO_imgupload', 0));
+  $config->set('FOO_imgupload_url', update_variable_get('FOO_imgupload_url', 0));
+  $config->set('FOO_imgurl', update_variable_get('FOO_imgurl', 0));
+  $config->set('FOO_img_opacity', update_variable_get('FOO_img_opacity', 0));
+  $config->set('FOO_fontsize_value', update_variable_get('FOO_fontsize_value', 0));
+  $config->set('FOO_fontsize_unit', update_variable_get('FOO_fontsize_unit', 0));
+  $config->set('FOO_fontsize', update_variable_get('FOO_fontsize', 0));
+  $config->set('FOO_caption_align', update_variable_get('FOO_caption_align', 0));
+  $config->set('FOO_borderwidth', update_variable_get('FOO_borderwidth', 0));
+  $config->set('FOO_bordercolor', update_variable_get('FOO_bordercolor', 0));
+  $config->set('FOO_preview_html', update_variable_get('FOO_preview_html', 0));
+  $config->set('FOO_preview_collapsed', update_variable_get('FOO_preview_collapsed', 0));
+  $config->save();
+
+  // Delete variables.
+  update_variable_del('FOO_imgupload');
+  update_variable_del('FOO_imgupload_url');
+  update_variable_del('FOO_imgurl');
+  update_variable_del('FOO_img_opacity');
+  update_variable_del('FOO_fontsize_value');
+  update_variable_del('FOO_fontsize_unit');
+  update_variable_del('FOO_fontsize');
+  update_variable_del('FOO_caption_align');
+  update_variable_del('FOO_borderwidth');
+  update_variable_del('FOO_bordercolor');
+  update_variable_del('FOO_preview_html');
+  update_variable_del('FOO_preview_collapsed');
 }
