@@ -1,7 +1,7 @@
 ## Style (CSS) Settings module ##
 
 The content of this file is based on the online documentation that can be found
-at https://www.backdrop.org/node/2527412. It is recommended to read it there as it
+at https://www.drupal.org/node/2527412. It is recommended to read it there as it
 is improved, contains links and images, and code examples are syntax
 highlighted.
 
@@ -134,12 +134,12 @@ The defaults are preset for the CSS attribute 'opacity' but can be overriden.
 #### More info ####
 
 For more information on custom theme settings, read:
-  https://www.backdrop.org/node/177868
+  https://www.drupal.org/node/177868
 A simple example of theme settings is backdrop core's
 '/themes/garland/theme-settings.php' and '/themes/garland/garland.info'.
 
 For more information on custom module settings, read:
-  https://www.backdrop.org/node/1111260
+  https://www.drupal.org/node/1111260
 A simple but complete example of module settings is backdrop core's
 '/modules/update/update.settings.inc'.
 
@@ -164,7 +164,7 @@ Put the following comment at the top of CSS files that contain style variables:
 
 /**
  * The CSS values that are wrapped in '/*variable' comments are intended for use
- * by https://www.backdrop.org/project/style_settings. Enable that module to
+ * by https://github.com/backdrop-contrib/style_settings. Enable that module to
  * have those CSS variables exposed in the settings UI.
  */
 

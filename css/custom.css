@@ -4,7 +4,7 @@
  * highest priority.
  *
  * The CSS values that are wrapped in '/*variable' comments are intended for
- * use by https://www.backdrop.org/project/style_settings. Enable that module
+ * use by https://github.com/backdrop-contrib/style_settings. Enable that module
  * and include those CSS variables in a settings form. This is in fact an
  * ideal way to give a webmaster limited and validated control over a site's
  * styling through a UI.
